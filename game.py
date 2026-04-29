@@ -1,4 +1,4 @@
-from class import HumanPlayer, AIPlayer  # Alex의 클래스 불러오기
+from class import HumanPlayer, AIPlayer
 
 ''' question generator '''
 
@@ -75,6 +75,6 @@ class JeopardyGame:
         self.current_round = 1
         
     def load_question(self, category, score):
-        # 유리가 만든 fetch_question 사용!
+        # still working ... 
         data = self.qm.fetch_question(category, score)
         return data
