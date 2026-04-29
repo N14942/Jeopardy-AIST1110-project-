@@ -7,7 +7,7 @@ class JeopardyGame:
         self.qm = QuestionManager()
         # Manage player list
         self.players = [
-            HumanPlayer("Player", "assets/player.png"), # png needed
+            HumanPlayer("Player", "assets/player.png"),
             AIPlayer("AI_1", "assets/ai1.png"),
             AIPlayer("AI_2", "assets/ai2.png")
         ]
