@@ -3,7 +3,7 @@ import pygame
 import sys
 
 class Interface:
-    def __init__(self, width=900, height=600, title="Jeopardy Game"):
+    def __init__(self, game_logic, width=900, height=600, title="Jeopardy Game"):
         pygame.init()
         self.game = game_logic
         
