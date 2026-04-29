@@ -1,79 +1,40 @@
-from class import HumanPlayer, AIPlayer
-
-''' question generator '''
-
-import os
-from dotenv import load_dotenv
-from openai import OpenAI
-
-load_dotenv()
-AZURE_API_KEY = os.getenv("AZURE_API_KEY")  # KEY Need to be entered
- 
-class QuestionManager:
-    def __init__(self):
-        self.client = OpenAI(
-            base_url="https://cuhk-apip.azure-api.net/openai-eus2/openai/v1",
-            api_key=AZURE_API_KEY,
-            default_headers={"api-key": AZURE_API_KEY},
-        )
-
-    def fetch_question(self, category, difficulty):
-        prompt = f"""
-        Generate a Jeopardy question about '{category}' for ${difficulty}.
-        Follow these rules strictly:
-        1. The answer must start with 'What is' or 'Who is'.
-        2. Provide 3 multiple-choice options (including the correct answer).
-        3. Format your response exactly like this:
-        Clue: [Question text]
-        Answer: [Correct Answer]
-        Options: [Option1, Option2, Option3]
-        """
-
-        response = self.client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": "You are a Jeopardy game host."},
-                {"role": "user", "content": prompt}
-            ]
-        )
-        
-        raw_text = response.choices[0].message.content
-        return self._parse_response(raw_text)
-
-    def _parse_response(self, text):
-        lines = text.strip().split('\n')
-        data = {}
-        for line in lines:
-            if line.startswith("Clue:"):
-                data['clue'] = line.replace("Clue:", "").strip()
-            elif line.startswith("Answer:"):
-                data['answer'] = line.replace("Answer:", "").strip()
-            elif line.startswith("Options:"):
-                options_text = line.replace("Options:", "").replace("[", "").replace("]", "").strip()
-                data['options'] = [opt.strip() for opt in options_text.split(',')]
-        
-        if 'answer' in data and not (data['answer'].startswith("What is") or data['answer'].startswith("Who is")):
-            data['answer'] = "What is " + data['answer']
-            
-        return data
-
-qm = QuestionManager()
-question_data = qm.fetch_question("Python", 200)
-print(question_data['clue'])
-print(question_data['answer'])
-
-''' game '''
+from class_file import HumanPlayer, AIPlayer
+from api_manager import QuestionManager
+import random
 
 class JeopardyGame:
-    def __init__(self, question_manager):
-        self.qm = question_manager
+    def __init__(self):
+        self.qm = QuestionManager()
+        # Manage player list
         self.players = [
-            HumanPlayer("Player", "player_img.png"), # yet image names are just for example / delete if not needed
-            AIPlayer("AI_1", "ai1_img.png"),
-            AIPlayer("AI_2", "ai2_img.png")
+            HumanPlayer("Player", "assets/player.png"), # png needed
+            AIPlayer("AI_1", "assets/ai1.png"),
+            AIPlayer("AI_2", "assets/ai2.png")
         ]
         self.current_round = 1
-        
-    def load_question(self, category, score):
-        data = self.qm.fetch_question(category, score)
-        return data
+        self.current_question = None
+        self.used_questions = [] # Save index of already selected question
+
+    def select_question(self, category, score, index):
+        """ Select a question and retrieve it from the API. """
+        if index in self.used_questions:
+            return None # Preventing the re-selection of problems that have already been used
+            
+        self.used_questions.append(index)
+        self.current_question = self.qm.fetch_question(category, score)
+        return self.current_question
+
+    def process_answer(self, player_index, provided_answer):
+        """ Check if the player's chosen answer is correct and update the score! """
+        player = self.players[player_index]
+        correct_answer = self.current_question['answer']
+
+        # Use strip().lower() to reduce case or spacing errors
+        if provided_answer.strip().lower() == correct_answer.strip().lower():
+            # Convert the score received from fetch_question into a number and add it.
+            # (Be careful for now: the score value in current_question can be a string)
+            player.score.add(200) # example: 200 points
+            return True
+        else:
+            player.score.deduct(200)
+            return False
