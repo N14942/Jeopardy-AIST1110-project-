@@ -75,6 +75,5 @@ class JeopardyGame:
         self.current_round = 1
         
     def load_question(self, category, score):
-        # still working ... 
         data = self.qm.fetch_question(category, score)
         return data
