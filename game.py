@@ -21,10 +21,16 @@ class JeopardyGame:
             return None # Preventing the re-selection of problems that have already been used
             
         self.used_questions.append(index)
+        self.current_question_value = score
+        
         self.current_question = self.qm.fetch_question(category, score)
         return self.current_question
 
     def process_answer(self, player_index, provided_answer):
+        # Check first if the question exists
+        if not self.current_question:
+            return False
+        
         """ Check if the player's chosen answer is correct and update the score! """
         player = self.players[player_index]
         correct_answer = self.current_question['answer']
@@ -33,8 +39,8 @@ class JeopardyGame:
         if provided_answer.strip().lower() == correct_answer.strip().lower():
             # Convert the score received from fetch_question into a number and add it.
             # (Be careful for now: the score value in current_question can be a string)
-            player.score.add(200) # example: 200 points
+            player.score.add(self.current_question_value)
             return True
         else:
-            player.score.deduct(200)
+            player.score.deduct(self.current_question_value)
             return False
