@@ -5,7 +5,8 @@ import sys
 class Interface:
     def __init__(self, width=900, height=600, title="Jeopardy Game"):
         pygame.init()
-
+        self.game = game_logic
+        
         self.width = width
         self.height = height
         self.screen = pygame.display.set_mode((self.width, self.height))
@@ -75,6 +76,15 @@ class Interface:
                     if rect.collidepoint(event.pos):
                         print("clicked question box:", i)
                         self.current_question_index = i
+                        
+                        ''' I edited here for connections with main.py - Yuri - '''
+                        # Category and score settings (I set them with examples temporarily for now)
+                        category = "General"
+                        score = (i % 4 + 1) * 100
+                        # Retrieving questions from API via game_logic
+                        self.current_data = self.game.select_question(category, score, i)
+                        ''' Edited to this point. delete here if it doesn't work well because of 'main.py' errors '''
+                        
                         self.scene = "question"
 
 
