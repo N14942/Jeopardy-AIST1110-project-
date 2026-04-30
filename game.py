@@ -1,6 +1,12 @@
-from class_file import HumanPlayer, AIPlayer
+from player import HumanPlayer, AIPlayer
 from api_manager import QuestionManager
+from enum import Enum
 import random
+
+class GameRound(Enum):
+    JEOPARDY = 1
+    DOUBLE_JEOPARDY = 2
+    FINAL_JEOPARDY = 3
 
 class JeopardyGame:
     def __init__(self):

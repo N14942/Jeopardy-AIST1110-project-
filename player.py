@@ -1,12 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, Self
-from enum import Enum
 import pygame
-
-class GameRound(Enum):
-    JEOPARDY = 1
-    DOUBLE_JEOPARDY = 2
-    FINAL_JEOPARDY = 3
 
 class Score:
     def __init__(self, value: int):
