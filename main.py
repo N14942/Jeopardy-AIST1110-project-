@@ -1,5 +1,5 @@
 from interface import Interface
-from game import JeopardyGame
+from gameboard import JeopardyGame
 from api_manager import QuestionManager
 
 def main():

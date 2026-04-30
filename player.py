@@ -84,7 +84,7 @@ class AIPlayer(Player):
         if current_time - self.think_start_time >= self.target_wait_time:
             self.is_thinking = False
             
-            if random.random() < self.accuracy:
+            if random.random() <= self.accuracy:
                 return correct_option
             else:
                 wrong_options = [opt for opt in all_options if opt != correct_option]
