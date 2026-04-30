@@ -68,28 +68,36 @@ class AIPlayer(Player):
         self.is_thinking = False
         self.start_time = 0
         self.wait_time = 0
-        self.current_decision = None
 
     def start_thinking(self):
         self.is_thinking = True
         self.start_time = pygame.time.get_ticks()
         self.wait_time = random.uniform(self.min_speed, self.max_speed) * 1000
 
-    def get_answer(self, correct_option: str, all_options: list, timeout: int = 5) -> str:
-        """logic: get AIPlayer's answer"""
+    def get_answer(self, correct_option: str, all_options: list) -> str:
+        """logic: get AIPlayer's answer """
         if not self.is_thinking:
             return None
         
         current_time = pygame.time.get_ticks()
-        if current_time - self.think_start_time >= self.target_wait_time:
+        if current_time >= self.think_start_time + self.target_wait_time:
             self.is_thinking = False
             
-            if random.random() <= self.accuracy:
+            if random.random() < self.accuracy:
                 return correct_option
             else:
                 wrong_options = [opt for opt in all_options if opt != correct_option]
                 return random.choice(wrong_options) if wrong_options else correct_option
         
         return None
-        
-
+    
+    """Example use of get_answer in main round: (do not make recursion in Player class)
+    ...
+    while running:
+    ...
+    # aiplayer1 get the chance to answer.
+        ans = bot.get_answer(correct_option, all_options)
+        if ans:
+            correctness = aiplayer1.update_score(self, answer, correct_option, points)
+        ...
+    """
