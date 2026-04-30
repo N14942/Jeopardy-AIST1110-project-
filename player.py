@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Any, Self
 import pygame
+import random
+import time
 
 class Score:
     def __init__(self, value: int):
@@ -23,6 +25,15 @@ class Player(ABC):
         self.image = pygame.image.load(image_path).convert_alpha()
         self.is_active = False
 
+    def update_score(self, answer: str, correct_option: str, points: int) -> bool:
+        """Update score; if correct return True; else False."""
+        if answer == correct_option:
+            self.score.add(points)
+            return True
+        else:
+            self.score.deduct(points)
+            return False
+        
     @abstractmethod
     def get_answer(self, limit: int = 5) -> int:
         pass
@@ -37,15 +48,48 @@ class Player(ABC):
 class HumanPlayer(Player):
 
     def get_answer(self, limit: int = 5) -> str:
-        """logic: get Player's answer, and do score calculation"""
-        pass
+        answer = input("")
 
 
 class AIPlayer(Player):
     def __init__(self, name: str, image_path: str, difficulty: str = "medium"):
         super().__init__(name, image_path)
         self.difficulty = difficulty
+        abilities = {
+            "easy":   {"accuracy": 0.5, "min_speed": 3.0, "max_speed": 5.5},
+            "medium": {"accuracy": 0.7, "min_speed": 1.5, "max_speed": 3.5},
+            "hard":   {"accuracy": 0.85, "min_speed": 0.5, "max_speed": 2.5}
+        }
+        ability = abilities.get(difficulty, abilities["medium"])
+        self.accuracy = ability["accuracy"]
+        self.min_speed = ability["min_speed"]
+        self.max_speed = ability["max_speed"]
 
-    def get_answer(self, timeout: int = 5) -> str:
-        """logic: get AIPlayer's answer, and do score calculation"""
-        pass
+        self.is_thinking = False
+        self.start_time = 0
+        self.wait_time = 0
+        self.current_decision = None
+
+    def start_thinking(self):
+        self.is_thinking = True
+        self.start_time = pygame.time.get_ticks()
+        self.wait_time = random.uniform(self.min_speed, self.max_speed) * 1000
+
+    def get_answer(self, correct_option: str, all_options: list, timeout: int = 5) -> str:
+        """logic: get AIPlayer's answer"""
+        if not self.is_thinking:
+            return None
+        
+        current_time = pygame.time.get_ticks()
+        if current_time - self.think_start_time >= self.target_wait_time:
+            self.is_thinking = False
+            
+            if random.random() < self.accuracy:
+                return correct_option
+            else:
+                wrong_options = [opt for opt in all_options if opt != correct_option]
+                return random.choice(wrong_options) if wrong_options else correct_option
+        
+        return None
+        
+
