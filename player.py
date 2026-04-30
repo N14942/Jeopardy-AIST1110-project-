@@ -95,9 +95,10 @@ class AIPlayer(Player):
     ...
     while running:
     ...
-    # aiplayer1 get the chance to answer.
+    # bot get the chance to answer.
+        bot.start_thinking()
         ans = bot.get_answer(correct_option, all_options)
         if ans:
-            correctness = aiplayer1.update_score(self, answer, correct_option, points)
+            correctness = aiplayer1.update_score(answer, correct_option, points)
         ...
     """
