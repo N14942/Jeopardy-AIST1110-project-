@@ -1,9 +1,12 @@
 # Create a simple single player interface,,,,,,
+#Haven't add the category interface
 import pygame
 import sys
+import math
+import random
 
 class Interface:
-    def __init__(self, game_logic, width=900, height=600, title="Jeopardy Game"):
+    def __init__(self, game_logic=None, width=900, height=600, title="Jeopardy Game"):
         pygame.init()
         self.game = game_logic
         
@@ -38,12 +41,17 @@ class Interface:
 
 
         self.font = pygame.font.SysFont(None, 60)
+        #time
+        self.choose_time_limit = 5
+        self.choose_start_ticks = 0
+        
 
 
 
     def run(self):
         while self.running:
             self.handle_events()
+
             # draw differnt interface: initial interface, choose question interface, answering interface and caculating counts
             if self.scene == "start":
                 self.draw_initial_interface()
@@ -65,11 +73,18 @@ class Interface:
             # close it by click 'X'
             if event.type == pygame.QUIT:
                 self.running = False
+
+            if self.scene == "choose" and self.get_choose_time_left() <= 0:
+                print("time out")
+                self.scene = "question"
+                self.current_question_index = random.randint(0,15)
+                print(self.current_question_index)
             # turn to choose question page by clicking start
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if self.scene == "start":
                     if self.start_button.collidepoint(event.pos):
                         self.scene = "choose"
+                        self.choose_start_ticks = pygame.time.get_ticks()
             # choose questions by clicking the box
                 elif self.scene == "choose":
                  for i, rect in enumerate(self.choices):
@@ -87,6 +102,11 @@ class Interface:
                         
                         self.scene = "question"
 
+    def get_choose_time_left(self):
+        current_ticks = pygame.time.get_ticks()
+        elapsed = (current_ticks - self.choose_start_ticks) / 1000
+        remaining = self.choose_time_limit - elapsed
+        return max(0, remaining)
 
 #different interfaces
     def draw_initial_interface(self):
@@ -102,13 +122,27 @@ class Interface:
         for i, rect in enumerate(self.choices):
             pygame.draw.rect(self.screen, (0, 139, 139), rect)
             pygame.draw.rect(self.screen, (255, 255, 255), rect, 3)
-            text = self.font.render(f"${int((i%4 + 1) * 100)}", True, (255, 255, 255))
-            self.screen.blit(text, (rect.x + 30, rect.y + 25))
+            score = [200, 400, 600, 1000]
+            j = i%4
+            text = self.font.render(f"${score[j]}", True, (255, 255, 255))
+            
+            self.screen.blit(text, (rect.x + 15, rect.y + 25))
+            time_left = math.ceil(self.get_choose_time_left())
+            time_text = self.font.render(f"Time: {time_left}", True, self.text_color)
+            self.screen.blit(time_text, (650, 35))
 
     def draw_question_screen(self):
         self.screen.fill(self.bg_color)
+        q = self.current_question
+
+        question_text = self.font.render(q.ques, True, self.text_color)
+        self.screen.blit(question_text, (80, 80))
+
+        for i, option in enumerate(q.options):
+            option_text = self.font.render(f"{i + 1}. {option}", True, self.text_color)
+            self.screen.blit(option_text, (120, 180 + i * 80))
 
 
 #test
-# ui = Interface()
-# ui.run()
+#ui = Interface()
+#ui.run()
