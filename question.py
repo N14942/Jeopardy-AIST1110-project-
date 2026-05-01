@@ -41,12 +41,12 @@ class AI_Environment:
         )
 
 class Question:
-    def __init__(self, field: str, point: int, timeout = 5):
+    def __init__(self, field: str, point: int, timeout = 5, buzzing_time = 5):
         self.field = field
-        self.score = point
+        self.point = point
         self.ques = ""
         self.options = []
-        self.answer = -1
+        self.answer = 10
         self.timeout = timeout
 
         self.is_answered = False
@@ -76,9 +76,15 @@ class Question:
             self.options = ["2", "I don't know.", "42", "obtuse angle"]
             self.answer = 0
 
-    def check_answer(self, user_answer: str) -> bool:
-        return user_answer == self.answer
+    def reset_time(self):
+        self.start_ticks = pygame.time.get_ticks()
     
+    def get_buzzing_time_left(self) -> float:
+        current_ticks = pygame.time.get_ticks()
+        elapsed_time = (current_ticks - self.start_ticks) / 1000
+        remaining = self.buzzing_time - elapsed_time
+        return max(0, remaining)
+
     def get_remaining_time(self) -> float:
         current_ticks = pygame.time.get_ticks()
         elapsed_time = (current_ticks - self.start_ticks) / 1000
