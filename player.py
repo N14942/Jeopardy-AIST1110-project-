@@ -4,20 +4,6 @@ from enum import Enum
 import pygame
 import random
 
-class Score:
-    def __init__(self, value: int):
-        self.value = value
-
-    def add(self, points: int):
-        self.value += points
-
-    def deduct(self, points: int):
-        self.value -= points
-
-    def __str__(self):
-        return f"Score: {self.value}"
-
-
 class Difficulty(Enum):
     EASY = "easy"
     MEDIUM = "medium"
@@ -37,7 +23,7 @@ class Player(ABC):
 
     def __init__(self, name: str, image_path: str):
         self.name = name
-        self.score = Score(0)
+        self.score = 0
         self.image = pygame.image.load(image_path).convert_alpha()
         self.current_choice = None
         self.buzz = True
@@ -46,33 +32,26 @@ class Player(ABC):
         # Allow player to buzz.
         self.buzz = True
 
-    def update_score(self, current_question: Question) -> bool:
-        """Update score; if correct return True; else False."""
+    def update_score(self, current_question) -> bool:
         if self.current_choice == current_question.answer:
-            self.score.add(current_question.point)
+            self.score += current_question.point
             self.current_choice = None
             return True
         else:
-            self.score.deduct(current_question.point)
+            self.score -= current_question.point
             self.current_choice = None
-            # Player cannot buzz for this question.
+            # Ban buzzing of this player this round.
             self.buzz = False
             return False
         
     @abstractmethod
-    def check_buzz(self) -> bool:
+    def check_buzz(self, **kwargs) -> bool:
         pass
 
-    def get_answer(self) -> int:
+    @abstractmethod
+    def get_answer(self, current_question, **kwargs) -> int:
         pass
-
-    def __repr__(self) -> str:
-        return self.__str__()
-
-    def __str__(self) -> str:
-        return f"{self.name} (Score: {self.score})"
     
-
 class HumanPlayer(Player):
     def check_buzz(self, event):
         """Check whether human player press SPACE to buzz in, return True if Yes."""
@@ -87,13 +66,14 @@ class HumanPlayer(Player):
             False if no answer.
             None if no answer.
             (Design purpose: deal with valid answer/ timeout/ wait for answer)"""
+        
         remaining_time = current_question.get_remaining_time()
 
         if remaining_time <= 0:
-            self.current_choice = 10
+            self.current_choice = -1
             return False
         
-        if answer != None:
+        if answer is not None:
             self.current_choice = answer
             return True
 
@@ -108,18 +88,18 @@ class AIPlayer(Player):
         self.accuracy = ability["accuracy"]
         self.speed_range = ability["speed_range"]
         self.reaction_time = ability["reaction_time"]
+        self.decision_time = 0
+        self.target_buzz_time = 0
 
     def start_thinking(self):
         self.decision_time = random.uniform(*self.speed_range)
 
     def start_buzzing(self):
-        self.buzzing_time = random.uniform(*self.reaction_time)
+        self.target_buzz_time = random.uniform(*self.reaction_time)
 
     def check_buzz(self, current_question: Question) -> bool:
         remaining_time = current_question.get_buzzing_time_left()
-        if remaining_time >= self.reaction_time:
-            return True
-        return False
+        return remaining_time >= current_question.buzzing_time - self.target_buzz_time
 
     def get_answer(self, current_question: Question) -> bool:
         """logic: get AIPlayer's answer and store in the Player. 
@@ -131,7 +111,7 @@ class AIPlayer(Player):
         remaining_time = current_question.get_remaining_time()
 
         if remaining_time <= 0:
-            self.current_choice = 10
+            self.current_choice = -1
             return False
 
         if self.decision_time >= current_question.timeout - remaining_time:         
@@ -139,8 +119,8 @@ class AIPlayer(Player):
                 self.current_choice = current_question.answer
                 return True
             else:
-                wrong_options = [opt for opt in current_question.options if opt != current_question.answer]
-                self.current_choice = random.choice(wrong_options) if wrong_options else current_question.answer
+                wrong_indices = [i for i in range(len(current_question.options)) if i != current_question.answer]
+                self.current_choice = random.choice(wrong_indices) if wrong_indices else current_question.answer
                 return True
         
         return None
