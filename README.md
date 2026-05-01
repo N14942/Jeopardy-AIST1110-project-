@@ -9,32 +9,5 @@ Reminder:
 
 3, To get a good score, please make the structure clear. 
 
+*Game rules and related reminders are moved to rules_and_reminders.txt
 
-Sturcture design(current, you can edit if you have other ideas):
-
-1, Player: Store information and activity of ai and human players.
-
-2, Question: Give out ai-generated questions and answers.
-
-3, Gameboard: Run the game (Round, question selection...).
-
-4, interface: visualization / player operation -> gameboard.
-
-
-Question-snawering logic:
-
-1, Question promped: question + 4 options
-
-2, Players(human and AI) buzzing in-->one get opportunity to answer, other wait for he/she/it to answer.
-
-3, Answered corrctly->update score, show the answer, next question.
-
-4(Harder), Answered wromgly->update score, shower the wrong answer made, give hint->step 2 (Who answered wrongly in this question cannot join the buzzing round).
-
-4(Easier), Answered wromgly->update score, shower the correct answer, next question.
-
-Test on your device:
-
-About API: Please use.env file as tutorial 7 mentioned, 
-
-set env_used in class environment in question.py to true.

@@ -1,0 +1,64 @@
+Sturcture design(current, you can edit if you have other ideas):
+
+1, Player: Store information and activity of ai and human players.
+
+2, Question: Give out ai-generated questions and answers.
+
+3, Gameboard: Run the game (Round, question selection...).
+
+4, interface: visualization / player operation -> gameboard.
+
+Game rules (Shorter one):
+Gameround:
+1,Jeopardy! Round (round = 1) For first gameboard with 4x4 = 16 questions.
+0. Generate gameboard.(Score: 200, 400, 600, 1000)
+i. Players take turns to choose category and point value. 
+ii. After category and point value being chossen, question (multiple choice with 4 options) is shown.
+iii. Buzzing session(have time limit 5 second): the one who press button(SPACE on keyboard) first get chance to answwer.
+iv. Answering(have time limit 5 second): 
+if correct: add point and go to next question.
+if wrong / out of time: mark dedction on the player, go back to Buzzing session (player who have answered wrongly to this question cannot join this session.)
+
+SPECIAL CASE: If all player answered wrongly / out of time or Buzzing out of time:
+Skip to next question.
+
+v. In this round, one Double Jeopardy is hidden in the questions.
+
+Double Jeopardy:
+A question which player who choose it can have an opportunity to wager.
+Wager: Make the score of the question in range [5, max(max_cash value on board, player's current score)]
+
+2, Double Jeopardy! Round (round = 2) For first gameboard with 4x4 = 16 questions.
+0. Generate gameboard.(Score: 400, 800, 1200, 2000, which are multipled by 2)
+i. Player who have lowest score to choose category and point value.
+ii-iv: same to round 1.
+v. Two Double Jeopardy is hidden in the questions.
+
+3, Final Jeopardy! Round (round = 3)
+0. Randomly select a field， generate a challenging question (Do not show question now, only category).
+i. Waging time: Make the score of the question for them in range [0, player's current score](*Score < 1 cannot participate)
+ii. Answer in 10 seconds. 
+
+4, Final winner:
+Give out first, second...place. Higher score wins.
+SPECIAL CASE: Same mark: same place (1gold, 2gold, 3bronze, for example.)
+
+
+Reminders:
+To Gameboard:
+i. Please carefully read player.py and question.py (or use ai to summarize) and know how functions work. If you need adding new functions, please tell me.
+ii. Reset buzzing state of all players after finishing a question.
+iii. To make Progress Bar work properly, check_buzz() and get_answer() functions are used to monitor player's actions all time.
+Thus, put them in a loop such as while True: ...
+
+To interface:
+i. Please carefully read player.py and question.py (or use ai to summarize) and know how functions work. If you need adding new functions, please tell me.
+ii. You may use get_remaining_time() and get_buzzing_time_left() in class question to make a time bar. 
+iii. get_answer() return False when out of time, and update_score() return False when answered wrongly.
+you may use this to design speical effects for out of time and answered wrongly separately.
+
+Test on your device:
+
+About API: Please use.env file as tutorial 7 mentioned, 
+
+set env_used in class environment in question.py to true.

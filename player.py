@@ -18,7 +18,6 @@ class Difficulty(Enum):
         }
         return configs[self]
 
-
 class Player(ABC):
 
     def __init__(self, name: str, image_path: str):
@@ -60,6 +59,12 @@ class HumanPlayer(Player):
                 return True
         return False
 
+    def update_score(self, amount, was_correct):
+        if was_correct:
+            self.score += amount
+        else:
+            self.score -= amount
+
     def get_answer(self, current_question: Question, answer: int = None) -> bool:
         """logic: Update HumanPlayer's answer and store in the Player. 
             Return True if answered successfully in time limit.
@@ -100,6 +105,12 @@ class AIPlayer(Player):
     def check_buzz(self, current_question: Question) -> bool:
         remaining_time = current_question.get_buzzing_time_left()
         return remaining_time >= current_question.buzzing_time - self.target_buzz_time
+    
+    def do_wager(self, max_value, round = 1):
+        if round == 3:
+            return random.randint(0, int(self.score))
+        else:
+            return random.randint(5, int(max(self.score, max_value)))
 
     def get_answer(self, current_question: Question) -> bool:
         """logic: get AIPlayer's answer and store in the Player. 

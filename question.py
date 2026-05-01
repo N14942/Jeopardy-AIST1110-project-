@@ -39,7 +39,7 @@ class AI_Environment:
         )
 
 class Question:
-    def __init__(self, field: str, point: int, timeout = 5, buzzing_time = 5):
+    def __init__(self, field: str, point: int, timeout = 5, buzzing_time = 5, daily_double = False):
         self.field = field
         self.point = point
         self.ques = ""
@@ -47,19 +47,45 @@ class Question:
         self.answer = -1
         self.timeout = timeout
         self.buzzing_time = buzzing_time
+        self.daily_double = daily_double
 
         self.is_answered = False
         self.start_ticks = 0
+    
+    def set_as_daily_double(self):
+        self.is_daily_double = True
 
-    def generate_question(self, ai: AI_Environment):
-        prompt = (
-            f"Generate a {self.field} trivia question worth {self.point}."
-             "(Score range:200(easy)-1000(difficult)). "
-            "Provide exactly 4 options, only one of them is correct."
-             "Return JSON in the format: "
-            "{'question': str, 'options': list, 'correct_answer_index': int} "
-            "The correct_answer_index must be 0, 1, 2, or 3, corresponding to the index of correct answer in the list."
-        )
+    def reset_score(self, wager: int):
+        self.point = wager
+
+    def generate_question(self, ai: AI_Environment, round = 1):
+        if round == 3:
+            prompt = (
+                f"Generate a challenging question for final round."
+                "(Score range:200(easy)-1000(difficult)). "
+                "Provide exactly 4 options, only one of them is correct."
+                "Return JSON in the format: "
+                "{'question': str, 'options': list, 'correct_answer_index': int} "
+                "The correct_answer_index must be 0, 1, 2, or 3, corresponding to the index of correct answer in the list."
+            )
+        elif round == 2:
+            prompt = (
+                f"Generate a {self.field} question worth {self.point}."
+                "(Score range:400(easy)-2000(difficult)). "
+                "Provide exactly 4 options, only one of them is correct."
+                "Return JSON in the format: "
+                "{'question': str, 'options': list, 'correct_answer_index': int} "
+                "The correct_answer_index must be 0, 1, 2, or 3, corresponding to the index of correct answer in the list."
+            )
+        else:
+            prompt = (
+                f"Generate a {self.field} question worth {self.point}."
+                "(Score range:200(easy)-1000(difficult)). "
+                "Provide exactly 4 options, only one of them is correct."
+                "Return JSON in the format: "
+                "{'question': str, 'options': list, 'correct_answer_index': int} "
+                "The correct_answer_index must be 0, 1, 2, or 3, corresponding to the index of correct answer in the list."
+            )
 
         try:
             response = ai.fetch_ai_completion(prompt)
