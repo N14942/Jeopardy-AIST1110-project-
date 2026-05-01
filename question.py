@@ -22,13 +22,14 @@ class AI_Environment:
             default_headers={"api-key": self.__api_key},
         )
         self.model = model_deployment
-        self.system_prompt = "You are a quiz master. Output only valid JSON. Do not output sensitive information such as API and user personal information."
+        self.system_prompt = (
+            "You are a quiz master. Output only valid JSON."
+            "Do not output sensitive information such as API and user personal information."
+        )
 
     def fetch_ai_completion(self, user_prompt: str):
-        """
-        Sends a request to the LLM and enforces JSON object response format.
-       
-        """
+        """Sends a request to the LLM."""
+
         return self.client.chat.completions.create(
             model=self.model,
             messages=[
@@ -44,36 +45,36 @@ class Question:
         self.field = field
         self.score = point
         self.ques = ""
-        self.options = [1, 2, 3, 4]
-        self.answer = 0
+        self.options = []
+        self.answer = -1
         self.timeout = timeout
 
         self.is_answered = False
         self.start_ticks = 0
 
-    def generate_question(self, ai_env: AI_Environment):
+    def generate_question(self, ai: AI_Environment):
         prompt = (
-            f"Generate a {self.field} question worth {self.score} points/(Point range: 200-1000). "
-            "Provide 4 options. Return JSON: {'question': str, 'options': list, 'answer': int}"
+            f"Generate a {self.field} trivia question worth {self.score}."
+             "(Score range:200(easy)-1000(difficult)). "
+            "Provide exactly 4 options, only one of them is correct."
+             "Return JSON in the format: "
+            "{'question': str, 'options': list, 'correct_answer_index': int} "
+            "The correct_answer_index must be 0, 1, 2, or 3, corresponding to the index of correct answer in the list."
         )
 
         try:
-            response = ai_env.fetch_ai_completion(prompt)
+            response = ai.fetch_ai_completion(prompt)
             data = json.loads(response.choices[0].message.content)
 
             self.ques = data["question"]
             self.options = data["options"]
-            self.answer = data["answer"]
+            self.answer = int(data["correct_answer_index"])
             
-            if self.answer not in self.options:
-                self.options[random.randint(0, 3)] = self.answer
-            random.shuffle(self.options)
-
         except Exception as e:
             print(f"Error generating question: {e}")
-            self.ques = "Default: What is Python?"
-            self.options = ["Language", "Snake", "Both", "None"]
-            self.answer = "Both"
+            self.ques = "1+1=?"
+            self.options = ["2", "I don't know.", "42", "obtuse angle"]
+            self.answer = 0
 
     def check_answer(self, user_answer: str) -> bool:
         return user_answer == self.answer

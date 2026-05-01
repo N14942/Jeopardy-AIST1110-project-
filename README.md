@@ -32,3 +32,9 @@ Question-snawering logic:
 4(Harder), Answered wromgly->update score, shower the wrong answer made, give hint->step 2 (Who answered wrongly in this question cannot join the buzzing round).
 
 4(Easier), Answered wromgly->update score, shower the correct answer, next question.
+
+Test on your device:
+
+About API: Please use.env file as tutorial 7 mentioned, 
+
+set env_used in class environment in question.py to true.
