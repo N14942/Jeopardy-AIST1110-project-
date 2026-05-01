@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Self
+from question import Question
+from enum import Enum
 import pygame
 import random
 import time
@@ -16,6 +18,20 @@ class Score:
 
     def __str__(self):
         return f"Score: {self.value}"
+    
+class Difficulty(Enum):
+    EASY = "easy"
+    MEDIUM = "medium"
+    HARD = "hard"
+
+    @property
+    def ability(self):
+        configs = {
+            Difficulty.EASY:   {"accuracy": 0.5, "speed_range": (3.0, 5.5)},
+            Difficulty.MEDIUM: {"accuracy": 0.7, "speed_range": (1.5, 3.5)},
+            Difficulty.HARD:   {"accuracy": 0.85, "speed_range": (0.5, 2.5)}
+        }
+        return configs[self]
 
 class Player(ABC):
 
@@ -25,13 +41,13 @@ class Player(ABC):
         self.image = pygame.image.load(image_path).convert_alpha()
         self.is_active = False
 
-    def update_score(self, answer: str, correct_option: str, points: int) -> bool:
+    def update_score(self, answer: int, current_question: Question) -> bool:
         """Update score; if correct return True; else False."""
-        if answer == correct_option:
-            self.score.add(points)
+        if answer == current_question.answer:
+            self.score.add(current_question.point)
             return True
         else:
-            self.score.deduct(points)
+            self.score.deduct(current_question.point)
             return False
         
     @abstractmethod
@@ -55,39 +71,32 @@ class AIPlayer(Player):
     def __init__(self, name: str, image_path: str, difficulty: str = "medium"):
         super().__init__(name, image_path)
         self.difficulty = difficulty
-        abilities = {
-            "easy":   {"accuracy": 0.5, "min_speed": 3.0, "max_speed": 5.5},
-            "medium": {"accuracy": 0.7, "min_speed": 1.5, "max_speed": 3.5},
-            "hard":   {"accuracy": 0.85, "min_speed": 0.5, "max_speed": 2.5}
-        }
-        ability = abilities.get(difficulty, abilities["medium"])
-        self.accuracy = ability["accuracy"]
-        self.min_speed = ability["min_speed"]
-        self.max_speed = ability["max_speed"]
 
-        self.is_thinking = False
-        self.start_time = 0
-        self.wait_time = 0
+        ability = difficulty.ability
+        self.accuracy = ability["accuracy"]
+        self.speed_range = ability["speed_range"]
+
+        self.decision_time = 0
 
     def start_thinking(self):
-        self.is_thinking = True
-        self.start_time = pygame.time.get_ticks()
-        self.wait_time = random.uniform(self.min_speed, self.max_speed) * 1000
+        self.is_active = True
+        self.decision_time = random.uniform(*self.speed_range)
 
-    def get_answer(self, correct_option: str, all_options: list) -> str:
+    def get_answer(self, current_question: Question) -> int:
         """logic: get AIPlayer's answer """
-        if not self.is_thinking:
+        if not self.is_active:
             return None
         
-        current_time = pygame.time.get_ticks()
-        if current_time >= self.think_start_time + self.target_wait_time:
-            self.is_thinking = False
+        remaining_time = current_question.get_remaining_time()
+
+        if self.decision_time >= current_question.timeout - remaining_time:
+            self.is_active = False
             
             if random.random() < self.accuracy:
-                return correct_option
+                return current_question.answer
             else:
-                wrong_options = [opt for opt in all_options if opt != correct_option]
-                return random.choice(wrong_options) if wrong_options else correct_option
+                wrong_options = [opt for opt in current_question.options if opt != current_question.answer]
+                return random.choice(wrong_options) if wrong_options else current_question.answer
         
         return None
     

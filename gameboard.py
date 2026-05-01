@@ -46,3 +46,4 @@ class JeopardyGame:
         else:
             player.score.deduct(self.current_question_value)
             return False
+        #As it is multiple choice, only use index to check right/wrong.
