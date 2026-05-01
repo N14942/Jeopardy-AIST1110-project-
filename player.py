@@ -115,7 +115,7 @@ class AIPlayer(Player):
     def get_answer(self, current_question: Question) -> bool:
         """logic: get AIPlayer's answer and store in the Player. 
             Return True if answered successfully in time limit.
-            False if no answer.
+            False if out of time.
             None if no answer.
             (Design purpose: deal with valid answer/ timeout/ wait for answer)"""
         
