@@ -27,7 +27,7 @@ class JeopardyGame:
             return None # Preventing the re-selection of problems that have already been used
             
         new_q = Question(field, score)
-        new_q.generate(self.ai_env)
+        new_q.generate(self.current_round)
         self.current_question = new_q
         self.used_questions.append(index)
         return new_q
