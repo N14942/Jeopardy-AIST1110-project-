@@ -38,12 +38,12 @@ class JeopardyGame:
         
         """ Check if the player's chosen answer is correct and update the score."""
         player = self.players[player_index]
-        correct_answer = self.current_question['answer']
+        correct_answer = self.current_question.answer
 
-        if provided_answer.strip().lower() == correct_answer.strip().lower():
-            player.score.add(self.current_question_value)
-            return True
-        else:
-            player.score.deduct(self.current_question_value)
-            return False
-        #As it is multiple choice, only use index to check right/wrong.
+        if str(provided_answer) == str(correct_answer):
+        player.score += self.current_question_value
+        return True
+    else:
+        player.score -= self.current_question_value
+        player.buzz = False
+        return False
