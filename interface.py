@@ -97,7 +97,7 @@ class Interface:
                         category = "General"
                         score = (i % 4 + 1) * 100
                         # Retrieving questions from API via game_logic
-                        self.current_data = self.game.select_question(category, score, i)
+                        self.current_question = self.game.select_question(category, score, i)
                         ''' Edited to this point. delete here if it doesn't work well because of 'main.py' errors '''
                         
                         self.scene = "question"
