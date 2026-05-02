@@ -1,10 +1,7 @@
 from interface import Interface
 from gameboard import JeopardyGame
-from api_manager import QuestionManager
 
 def main():
-    # Reset
-    qm = QuestionManager()
     game_logic = JeopardyGame()
     ui = Interface(game_logic)
 
