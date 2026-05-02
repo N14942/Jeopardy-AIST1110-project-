@@ -1,5 +1,5 @@
 from player import HumanPlayer, AIPlayer
-from question import Question, AI_Environment
+from question import Question
 from enum import Enum
 import random
 
@@ -10,7 +10,6 @@ class GameRound(Enum):
 
 class JeopardyGame:
     def __init__(self):
-        self.ai_env = AI_Environment(env_used=True)
         # Manage player list
         self.players = [
             HumanPlayer("Player", "assets/player.png"),
@@ -26,7 +25,7 @@ class JeopardyGame:
         if index in self.used_questions:
             return None # Preventing the re-selection of problems that have already been used
             
-        new_q = Question(field, score)
+        new_q = Question(category, score)
         new_q.generate(self.current_round)
         self.current_question = new_q
         self.used_questions.append(index)
@@ -41,9 +40,9 @@ class JeopardyGame:
         correct_answer = self.current_question.answer
 
         if int(provided_answer) == int(correct_answer):
-            player.score += self.current_question_value
+            player.score += self.current_question.point
             return True
         else:
-            player.score -= self.current_question_value
+            player.score -= self.current_question.point
             player.buzz = False
             return False
