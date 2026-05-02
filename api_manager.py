@@ -1,3 +1,9 @@
+
+# Delete this file
+# I integrated this file's content to other files (gameboard.py, question.py, etc.)
+
+"""
+
 import os
 import pygame
 from dotenv import load_dotenv
@@ -80,4 +86,6 @@ class QuestionManager:
         
         if data['answer'] and not (data['answer'].lower().startswith("what is") or data['answer'].lower().startswith("who is")):
             data['answer'] = "What is " + data['answer']
+
+"""
         return data
