@@ -40,10 +40,10 @@ class JeopardyGame:
         player = self.players[player_index]
         correct_answer = self.current_question.answer
 
-        if str(provided_answer) == str(correct_answer):
-        player.score += self.current_question_value
-        return True
-    else:
-        player.score -= self.current_question_value
-        player.buzz = False
-        return False
+        if int(provided_answer) == int(correct_answer):
+            player.score += self.current_question_value
+            return True
+        else:
+            player.score -= self.current_question_value
+            player.buzz = False
+            return False
