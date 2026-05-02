@@ -1,5 +1,5 @@
 from player import HumanPlayer, AIPlayer
-from api_manager import QuestionManager
+from question import Question, AI_Environment
 from enum import Enum
 import random
 
@@ -10,7 +10,7 @@ class GameRound(Enum):
 
 class JeopardyGame:
     def __init__(self):
-        self.qm = QuestionManager()
+        self.ai_env = AI_Environment(env_used=True)
         # Manage player list
         self.players = [
             HumanPlayer("Player", "assets/player.png"),
@@ -26,11 +26,11 @@ class JeopardyGame:
         if index in self.used_questions:
             return None # Preventing the re-selection of problems that have already been used
             
+        new_q = Question(field, score)
+        new_q.generate(self.ai_env)
+        self.current_question = new_q
         self.used_questions.append(index)
-        self.current_question_value = score
-        
-        self.current_question = self.qm.fetch_question(category, score)
-        return self.current_question
+        return new_q
 
     def process_answer(self, player_index, provided_answer):
         if not self.current_question:
