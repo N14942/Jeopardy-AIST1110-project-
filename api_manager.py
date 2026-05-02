@@ -34,7 +34,28 @@ class QuestionManager:
         )
 
     def fetch_question(self, category, score):
+        prompt = f"""
+        Generate a Jeopardy question about '{category}' for ${score}.
+        Follow these rules strictly:
+        1. The answer must start with 'What is' or 'Who is'.
+        2. Provide exactly 3 multiple-choice options (including the correct answer).
+        3. Format your response exactly like this:
+        Clue: [Question text]
+        Answer: [Correct Answer]
+        Options: [Option1, Option2, Option3]
+        """
+
+        response = self.client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "You are a Jeopardy game host."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        
+        raw_text = response.choices[0].message.content
         data = self._parse_response(raw_text)
+        
         return Question(
             category=category,
             point=score,
@@ -44,5 +65,19 @@ class QuestionManager:
         )
 
     def _parse_response(self, text):
-        # ... (유리가 짠 파싱 로직) ...
+        lines = text.strip().split('\n')
+        data = {'clue': '', 'answer': '', 'options': []}
+        
+        for line in lines:
+            line = line.strip()
+            if line.startswith("Clue:"):
+                data['clue'] = line.replace("Clue:", "").strip()
+            elif line.startswith("Answer:"):
+                data['answer'] = line.replace("Answer:", "").strip()
+            elif line.startswith("Options:"):
+                options_raw = line.replace("Options:", "").replace("[", "").replace("]", "").strip()
+                data['options'] = [opt.strip() for opt in options_raw.split(',')]
+        
+        if data['answer'] and not (data['answer'].lower().startswith("what is") or data['answer'].lower().startswith("who is")):
+            data['answer'] = "What is " + data['answer']
         return data
