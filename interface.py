@@ -1,5 +1,5 @@
 # Create a simple single player interface,,,,,,
-#Haven't add the round buzz and count interface
+#Haven't add the round and count interface
 import pygame
 import sys
 import math
@@ -21,6 +21,9 @@ class Interface:
         self.text_color = (140,140,148)
         self.button_bg = (163,111,90)
         self.frame_color = (217,179,140)
+
+        self.font = pygame.font.SysFont(None, 56)
+        self.small_font = pygame.font.SysFont(None, 30)
 
         #start option on initial interface
         self.scene = "start"
@@ -46,27 +49,26 @@ class Interface:
         self.input_active = False
         self.selected_field = None
 
-        #choose question options on choosing interface
-        self.choices = []
-        start_x = 20
-        start_y = 180
-        box_weight = 200
-        box_height = 80
-        gap = 20
-        for i in range(4):
-            for j in range(4):
-                x = start_x + i * (box_weight + gap)
-                y = start_y + j * (box_height + gap)
-                rect = pygame.Rect(x, y, box_weight, box_height)
-                self.choices.append(rect)
-        self.font = pygame.font.SysFont(None, 60)
-
+        self.create_choices()
         #time
         self.choose_time_limit = 5
         self.choose_start_ticks = 0
         
 
+    def create_choices(self):
+        self.choices = []
+        start_x = 30
+        start_y =110
+        box_width = 200
+        box_height = 80
+        gap = 10
 
+        for row in range(5):
+            for col in range(4):
+                x = start_x + col * (box_width + gap)
+                y = start_y + row * (box_height + gap)
+                rect = pygame.Rect(x, y, box_width, box_height)
+                self.choices.append(rect)
 
     def run(self):
         while self.running:
@@ -75,8 +77,8 @@ class Interface:
             # draw differnt interface: initial interface, choose question interface, answering interface and caculating counts
             if self.scene == "start":
                 self.draw_initial_interface()
-            elif self.scene == "field":
-                self.draw_choose_field()
+            elif self.scene == "setting":
+                self.setting_field()
             elif self.scene == "choose":
                 #self.choose_start_ticks = pygame.time.get_ticks()
                 self.draw_choose_question()
@@ -119,16 +121,17 @@ class Interface:
                 # turn to choose question page by clicking start
                 if self.scene == "start":
                     if self.start_button.collidepoint(event.pos):
-                        self.scene = "field"
+                        self.scene = "choose"
+                        self.choose_start_ticks = pygame.time.get_ticks()
                         
                 # choose some specific fields
-                elif self.scene == "field":
+                elif self.scene == "setting":
                     for i, rect in enumerate(self.field_buttons):
                         if rect.collidepoint(event.pos):
                             self.selected_field = self.fields[i]
                             print("selected field:", self.selected_field)
-                            self.scene = "choose"
-                            self.choose_start_ticks = pygame.time.get_ticks()
+                            self.scene = "start"
+                            #self.choose_start_ticks = pygame.time.get_ticks()
                     self.input_active = self.input_box.collidepoint(event.pos)
                 # choose questions by clicking the box
                 elif self.scene == "choose":
@@ -178,7 +181,7 @@ class Interface:
         button_text = self.font.render("START", True, (255, 255, 255))
         self.screen.blit(button_text, (385, 325))
 
-    def draw_choose_field(self):
+    def setting_field(self):
         self.screen.fill(self.bg_color)
         title = self.font.render("Choose or Type Any Field you like !", True, self.text_color)
         self.screen.blit(title, (110, 60))
@@ -203,17 +206,27 @@ class Interface:
     
     def draw_choose_question(self):
         self.screen.fill(self.bg_color)
-        for i, rect in enumerate(self.choices):
+
+        scores = [200, 400, 600, 1000]
+
+        for index, rect in enumerate(self.choices):
+            row = index // 4
+            col = index % 4
+
             pygame.draw.rect(self.screen, self.button_bg, rect)
             pygame.draw.rect(self.screen, self.frame_color, rect, 3)
-            score = [200, 400, 600, 1000]
-            j = i%4
-            text = self.font.render(f"${score[j]}", True, (255, 255, 255))
-            
-            self.screen.blit(text, (rect.x + 15, rect.y + 25))
-            time_left = math.ceil(self.get_choose_time_left())
-            time_text = self.font.render(f"Time: {time_left}", True, self.text_color)
-            self.screen.blit(time_text, (650, 35))
+
+            if row == 0:
+                text_content = self.fields[col]
+            else:
+                text_content = f"${scores[row - 1]}"
+
+            text = self.font.render(text_content, True, (255, 255, 255))
+            self.screen.blit(text, (rect.x + 5, rect.y + 25))
+
+        time_left = math.ceil(self.get_choose_time_left())
+        time_text = self.font.render(f"Time: {time_left}", True, self.text_color)
+        self.screen.blit(time_text, (650, 35))
 
     #def draw_round_info(self):
 
@@ -230,11 +243,10 @@ class Interface:
         for i, option in enumerate(q.options):
             option_text = self.font.render(f"{i + 1}. {option}", True, self.text_color)
             self.screen.blit(option_text, (120, 180 + i * 80))
+    
+    #def draw_count(self)
 
 
-    # def draw_count(self)
-
-
-# test
-# ui = Interface()
-# ui.run()
+#test
+#ui = Interface()
+#ui.run()
