@@ -5,7 +5,7 @@ import random
 import pygame
 
 class Gameboard:
-    def __init__(self, difficulty: Difficulty, 
+    def __init__(self, difficulty: Difficulty = Difficulty.MEDIUM, 
                  player_number: int = 3, 
                  buzzing_time: int = 5, 
                  timeout: int = 5, 
@@ -68,6 +68,7 @@ class Gameboard:
     def reset_board(self):
         self.all_question = []
         self.used_questions = 0
+        self.current_round += 1
 
     def reset_question_states(self):
         index = self.all_question.index(self.current_question)

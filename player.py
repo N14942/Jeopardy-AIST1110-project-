@@ -66,10 +66,7 @@ class HumanPlayer(Player):
             self.score -= amount
 
     def select_question(index: int):
-        if index == None:
-            return None
-        else:
-            return index
+        return index
     
     def do_wager(self, input, max_value, round = 1):
         if round == 3:
