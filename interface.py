@@ -39,7 +39,7 @@ class Interface:
         self.answering_player_index = None
         self.buzz_hint = "Press SPACE to buzz!"
         self.buzz_success_start_ticks = 0
-        self.buzz_success_duration = 1
+        self.buzz_success_duration = 2
         self.buzz_success_message = ""
 
         
@@ -57,7 +57,7 @@ class Interface:
         self.start_button = pygame.Rect(350, 300, 200, 80)
 
         #choose field or enter
-        self.fields = ["Science", "Art", "2D culture", "Python"]
+        self.fields = self.game.categories if self.game is not None else ["Science", "History", "Art", "Culture"]
         self.field_buttons = []
 
         start_x = 150
@@ -93,8 +93,8 @@ class Interface:
         box_height = 80
         gap = 10
 
-        for row in range(5):
-            for col in range(4):
+        for col in range(4):
+            for row in range(5):
                 x = start_x + col * (box_width + gap)
                 y = start_y + row * (box_height + gap)
                 rect = pygame.Rect(x, y, box_width, box_height)
@@ -209,20 +209,24 @@ class Interface:
                     self.input_active = self.input_box.collidepoint(event.pos)
                 # choose questions by clicking the box
                 elif self.scene == "choose":
-                 for i, rect in enumerate(self.choices):
-                    if rect.collidepoint(event.pos):
-                        print("clicked question box:", i)
-                        self.current_question_index = i
-                        
-                        ''' I edited here for connections with main.py - Yuri - '''
-                        # Category and score settings (I set them with examples temporarily for now)
-                        #category = "General"
-                        #score = (i % 4 + 1) * 100
-                        # Retrieving questions from API via game_logic
-                        #self.current_data = self.game.select_question(w, score, i)
-                        ''' Edited to this point. delete here if it doesn't work well because of 'main.py' errors '''
-                        
-                        self.enter_buzz_scene()
+                    for i, rect in enumerate(self.choices):
+                        if rect.collidepoint(event.pos):
+                            row = i % 5
+                            col = i // 5
+
+                            if row == 0:
+                                print("This is category row, not a question.")
+                                return
+                            q_index = col * 4 + (row - 1)
+                            print("clicked choice index:", i)
+                            print("question index:", q_index)
+
+                            self.current_question = self.game.select_question(q_index)
+
+                            if self.current_question is None:
+                                print("No valid question selected.")
+                                return
+                            self.enter_buzz_scene()
 
             # All typing action
             if event.type == pygame.KEYDOWN:
@@ -306,8 +310,8 @@ class Interface:
         scores = [200, 400, 600, 1000]
 
         for index, rect in enumerate(self.choices):
-            row = index // 4
-            col = index % 4
+            row = index % 5
+            col = index // 5
 
             pygame.draw.rect(self.screen, self.button_bg, rect)
             pygame.draw.rect(self.screen, self.frame_color, rect, 3)
@@ -350,13 +354,30 @@ class Interface:
     def draw_question_screen(self):
         self.screen.fill(self.bg_color)
         q = self.current_question
-
-        question_text = self.font.render(q.ques, True, self.text_color)
-        self.screen.blit(question_text, (80, 80))
-
+        #print(q.ques)
+        question = q.ques
+        question = question.split()
+        #print(question)
+        if len(question)<=12:
+         fir = ' '.join(question[0:6])
+         sec = ' '.join(question[6:12])
+         question_text_1 = self.font.render(fir, True, self.text_color)
+         question_text_2 = self.font.render(sec, True, self.text_color)
+         self.screen.blit(question_text_1, (70, 50))
+         self.screen.blit(question_text_2, (70, 100))
+        else:
+            fir = ' '.join(question[0:6])
+            sec = ' '.join(question[6:12])
+            thir = ' '.join(question[12:])
+            question_text_1 = self.font.render(fir, True, self.text_color)
+            question_text_2 = self.font.render(sec, True, self.text_color)
+            question_text_3 = self.font.render(thir, True, self.text_color)
+            self.screen.blit(question_text_1, (70, 20))
+            self.screen.blit(question_text_2, (70, 50))
+            self.screen.blit(question_text_3, (70, 80))
         for i, option in enumerate(q.options):
             option_text = self.font.render(f"{i + 1}. {option}", True, self.text_color)
-            self.screen.blit(option_text, (120, 180 + i * 80))
+            self.screen.blit(option_text, (120, 200 + i * 80))
     
     #def draw_count(self)
 
@@ -398,6 +419,7 @@ class Interface:
             self.buzz_hint = "No one buzzed!"
             self.enter_round_scene()
             return
+        
     def draw_buzz(self):
         self.screen.fill(self.bg_color)
 
@@ -440,20 +462,8 @@ class Interface:
         fill_w = int(bar_w * ratio)
         pygame.draw.rect(self.screen, self.button_bg, (bar_x, bar_y, fill_w, bar_h))
 
-    # player status
-        if self.game is not None:
-            y = 510
-            for player in self.game.players:
-                status = "Can buzz" if player.buzz else "Locked out"
-
-                player_text = self.small_font.render(
-                 f"{player.name}: {player.score}    {status}",True,self.text_color)
-                player_rect = player_text.get_rect(center=(self.width // 2, y))
-                self.screen.blit(player_text, player_rect)
-
-                y += 28
-
-   def draw_buzz_success(self):
+    #after buzz
+    def draw_buzz_success(self):
         self.screen.fill(self.bg_color)
         title = self.font.render(self.buzz_success_message, True, self.button_bg)
         title_rect = title.get_rect(center=(self.width // 2, 160))
@@ -464,3 +474,6 @@ class Interface:
         hint = self.small_font.render("Get ready to answer...", True, self.text_color)
         hint_rect = hint.get_rect(center=(self.width // 2, 420))
         self.screen.blit(hint, hint_rect)
+
+
+
