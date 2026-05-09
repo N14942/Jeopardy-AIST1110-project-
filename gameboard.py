@@ -66,7 +66,11 @@ class Gameboard:
         self.used_questions = 0
 
     def reset_question_states(self):
+        index = self.all_question.index(self.current_question)
+        self.all_question[index] = None
+        self.used_questions += 1
         self.current_question = None
+
         for player in self.players:
             player.buzz_reset()
             player.current_choice = None
