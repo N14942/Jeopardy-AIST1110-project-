@@ -36,11 +36,9 @@ class Player(ABC):
     def update_score(self, current_question) -> bool:
         if self.current_choice == current_question.correct_index:
             self.score += current_question.point
-            self.current_choice = None
             return True
         else:
             self.score -= current_question.point
-            self.current_choice = None
             # Ban buzzing of this player this round.
             self.buzz = False
             return False
@@ -66,6 +64,12 @@ class HumanPlayer(Player):
             self.score += amount
         else:
             self.score -= amount
+
+    def select_question(index: int):
+        if index == None:
+            return None
+        else:
+            return index
 
     def get_answer(self, current_question: Question, answer: int = None) -> bool:
         """logic: Update HumanPlayer's answer and store in the Player. 
@@ -113,6 +117,11 @@ class AIPlayer(Player):
             return random.randint(0, int(self.score))
         else:
             return random.randint(5, int(max(self.score, max_value)))
+        
+    def select_question(self, q):
+        pygame.time.delay(1000) 
+        valid = [x for x in q if x is not None]
+        return random.choice(valid)
 
     def get_answer(self, current_question: Question) -> bool:
         """logic: get AIPlayer's answer and store in the Player. 
@@ -133,7 +142,7 @@ class AIPlayer(Player):
                 return True
             else:
                 wrong_indices = [i for i in range(len(current_question.options)) if i != current_question.answer]
-                self.current_choice = random.choice(wrong_indices) if wrong_indices else current_question.answer
+                self.current_choice = random.choice(wrong_indices)
                 return True
-        
+
         return None

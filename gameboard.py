@@ -4,7 +4,7 @@ from enum import Enum
 import random
 import pygame
 
-class Board:
+class Gameboard:
     def __init__(self, difficulty: Difficulty, player_number: int = 3, buzzing_time: int = 5, timeout: int = 5, env_used: bool = True):
         self.player_number = player_number
         self.difficulty = difficulty
@@ -19,9 +19,8 @@ class Board:
 
         self.categories = ["Science", "History", "Geography", "Culture"]
         self.all_question = []
-        self.used_questions = []
+        self.used_questions = 0
         
-
     def generate_aiplayers(self):
         name_pool = ["Jacky", "Lily", "L", "Bocchi", "Oblivious", "Yagami", "Kita", "Tomorin", "Ryo", "Solo_leveling", "OMGkawaiiAngel"]
         def diff_set():
@@ -30,8 +29,8 @@ class Board:
             else:
                 return self.difficulty
         for i in range(self.player_number - 1):
-            name = AIPlayer(random.choice(name_pool))
-            self.aiplayers.append(name, diff_set())
+            name = random.choice(name_pool)
+            self.players.append(AIPlayer(name, diff_set()))
             name_pool.remove(name)
 
     def generate_questions(self):
@@ -49,7 +48,6 @@ class Board:
                 double_coords.add((random.randint(0, 3), random.randint(0, 3)))
 
             for i in range(4):
-                question_list = []
                 for j in range(4):
                     q = Question(
                         field = self.categories[i], 
@@ -59,18 +57,19 @@ class Board:
                         )
                     if (i, j) in double_coords:
                         q.set_as_daily_double()
-                    question_list.append(q)
-                self.all_question.append(question_list)
+                    self.all_question.append(q)
+                
             
     def reset_board(self):
-        self.current_round = 1
-        self.current_question = None
+        self.current_round += 1
         self.all_question = []
-        self.used_questions = []
+        self.used_questions = 0
 
-    def reset_buzzers(self):
+    def reset_question_states(self):
+        self.current_question = None
         for player in self.players:
             player.buzz_reset()
+            player.current_choice = None
 
     def get_max_board_value(self) -> int:
         if self.current_round == 1:
@@ -78,17 +77,6 @@ class Board:
         elif self.current_round == 2:
             return 2000
         return 0
-    
-    def get_rankings(self):
+
+    def update_rankings(self):
         self.ranking = sorted(self.players, key=lambda x: x.score, reverse=True)
-
-    def select_question(self, score, index):
-        pass
-
-    def get_buzzling_player(self) -> int:
-        while True:
-            for p in self.players
-    
-    def non_final_JEOPARDY(self):
-        self.generate_questions()
-        while len(self.used_questions) < 16:
