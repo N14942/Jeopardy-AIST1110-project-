@@ -1,8 +1,15 @@
 from interface import Interface
-from gameboard import JeopardyGame
+from gameboard import Gameboard
+
+class Round:
+    def __init__(self, gameboard: Gameboard, interface: Interface):
+        self.game = gameboard
+        self.interface = interface
+
+
 
 def main():
-    game_logic = JeopardyGame()
+    game_logic = Gameboard()
     ui = Interface(game_logic)
 
     # Run Main Loop

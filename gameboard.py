@@ -5,7 +5,7 @@ import random
 import pygame
 
 class Gameboard:
-    def __init__(self, difficulty: Difficulty, player_number: int = 3, buzzing_time: int = 5, timeout: int = 5, env_used: bool = True):
+    def __init__(self, difficulty: Difficulty, player_number: int = 3, buzzing_time: int = 5, timeout: int = 5, env_used: bool = True, categories = ["Science", "History", "Geography", "Culture"]):
         self.player_number = player_number
         self.difficulty = difficulty
         self.buzzing_time = buzzing_time
@@ -17,7 +17,7 @@ class Gameboard:
         self.current_round = 1
         self.current_question = None
 
-        self.categories = ["Science", "History", "Geography", "Culture"]
+        self.categories = categories
         self.all_question = []
         self.used_questions = 0
         
