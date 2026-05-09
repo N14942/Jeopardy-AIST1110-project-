@@ -65,7 +65,7 @@ class Question:
     def reset_score(self, wager: int):
         self.point = wager
 
-    def generate(self, ai_manager: AI_Manager, round_num=1):
+    def generate(self, ai_manager: AI_Manager, round_num: int = 1):
         score_hint = "200-1000" if round_num != 2 else "400-2000"
         if round_num == 3: score_hint = "extremely challenging"
         self.correct_index = random.randint(1, 4)

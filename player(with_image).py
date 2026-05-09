@@ -20,9 +20,10 @@ class Difficulty(Enum):
 
 class Player(ABC):
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, image_path: str):
         self.name = name
         self.score = 0
+        self.image = pygame.image.load(image_path).convert_alpha()
         self.current_choice = None
         self.buzz = True
 
@@ -30,11 +31,8 @@ class Player(ABC):
         # Allow player to buzz.
         self.buzz = True
 
-    def update_player_info(self, name: str):
-        self.name = name
-
     def update_score(self, current_question) -> bool:
-        if self.current_choice == current_question.correct_index:
+        if self.current_choice == current_question.answer:
             self.score += current_question.point
             self.current_choice = None
             return True
@@ -88,8 +86,8 @@ class HumanPlayer(Player):
 
 
 class AIPlayer(Player):
-    def __init__(self, name: str, difficulty = Difficulty.MEDIUM):
-        super().__init__(name)
+    def __init__(self, name: str, image_path: str, difficulty = Difficulty.MEDIUM):
+        super().__init__(name, image_path)
         self.difficulty = difficulty
         ability = self.difficulty.ability
         self.accuracy = ability["accuracy"]
