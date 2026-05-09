@@ -66,17 +66,6 @@ class HumanPlayer(Player):
         else:
             self.score -= amount
     
-    def do_wager(self, input, max_value, round = 1):
-        if round == 3:
-            min = 5
-            max = self.score
-        else:
-            min = 0
-            max = max(self.score, max_value)
-        if input > max or input < min:
-            return False
-        else:
-            return input
 
 
 class AIPlayer(Player):

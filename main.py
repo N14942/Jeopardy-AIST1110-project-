@@ -50,6 +50,32 @@ class Round:
         return q
     
     def question_answering_session(self, player: AIPlayer | HumanPlayer) -> bool:
+        q = self.game.current_question
+
+        if q.is_daily_double:
+            max_value = self.game.get_max_board_value()
+            
+            if isinstance(player, AIPlayer):
+                wager = player.do_wager(max_value, round=self.game.current_round)
+            else:
+                """
+                move human wager to interface:
+                def do_wager(self, input, max_value, round = 1):
+        if round == 3:
+            min = 5
+            max = self.score
+        else:
+            min = 0
+            max = max(self.score, max_value)
+        if input > max or input < min:
+            return False
+        else:
+            return input
+                """
+                wager = 5 #[Hook]
+                 
+            q.reset_score(wager)
+
         if isinstance(player, AIPlayer):
             player.start_thinking()
 
@@ -126,6 +152,20 @@ class Round:
         self.game.generate_questions() 
         final_q = self.game.all_question
         self.game.current_question = final_q
+
+        wagers = {}
+        
+        for p in eligible_players:
+            if isinstance(p, AIPlayer):
+                wager = p.do_wager(max_value=0, round=3)
+                wagers[p] = wager
+            else:
+                # [INTERFACE HOOK]: 弹出输入框或滑块让玩家下注
+                # self.ui.scene = "wager_input"
+                # wager = self.ui.get_user_wager(max_limit=p.score)
+                wager = 0 # 占位符
+                wagers[p] = wager
+            print(f"{p.name} 下注了 ${wagers[p]}")
 
     def summary():
         pass
