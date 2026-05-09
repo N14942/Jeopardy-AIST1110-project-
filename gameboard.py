@@ -62,6 +62,7 @@ class Gameboard:
                         )
                     if (i, j) in double_coords:
                         q.set_as_daily_double()
+                    q.generate(ai_manager=self.ai_manager, round_num = self.current_round)
                     self.all_question.append(q)
                 
             

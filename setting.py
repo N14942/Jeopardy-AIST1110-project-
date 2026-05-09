@@ -49,7 +49,7 @@ class Round:
                     q = self.game.all_question(index)
         return q
     
-    def get_answer_of_player(self, player) -> bool:
+    def get_answer_of_player(self, player: AIPlayer | HumanPlayer) -> bool:
         q = self.game.current_question
         q.reset_time()
         if isinstance(player, AIPlayer):
@@ -87,6 +87,7 @@ class Round:
 
         return None
                     """
+                player.update_answer(answer)
                 if q.get_remaining_time() <= 0:
                     self.current_choice = -1
                     player.update_score(q)

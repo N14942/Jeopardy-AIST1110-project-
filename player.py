@@ -32,17 +32,6 @@ class Player(ABC):
 
     def update_player_info(self, name: str):
         self.name = name
-
-    def update_score(self, current_question: Question) -> bool:
-        if self.current_choice == current_question.correct_index:
-            self.score += current_question.point
-            current_question.answered = True
-            return True
-        else:
-            self.score -= current_question.point
-            # Ban buzzing of this player this round.
-            self.buzz = False
-            return False
         
     @abstractmethod
     def check_buzz(self, **kwargs) -> bool:
@@ -60,11 +49,19 @@ class HumanPlayer(Player):
                 return True
         return False
 
-    def update_score(self, amount, was_correct):
-        if was_correct:
-            self.score += amount
+    def update_score(self, current_question: Question) -> bool:
+        if self.current_choice == current_question.correct_index:
+            self.score += current_question.point
+            current_question.answered = True
+            return True
         else:
-            self.score -= amount
+            self.score -= current_question.point
+            # Ban buzzing of this player this round.
+            self.buzz = False
+            return False
+        
+    def update_answer(self, answer):
+        self.current_choice = answer
     
 
 
@@ -84,6 +81,17 @@ class AIPlayer(Player):
 
     def start_buzzing(self):
         self.target_buzz_time = random.uniform(*self.reaction_time)
+
+    def update_score(self, current_question: Question) -> bool:
+        if self.current_choice == current_question.correct_index:
+            self.score += current_question.point
+            current_question.answered = True
+            return True
+        else:
+            self.score -= current_question.point
+            # Ban buzzing of this player this round.
+            self.buzz = False
+            return False
 
     def check_buzz(self, current_question: Question) -> bool:
         remaining_time = current_question.get_buzzing_time_left()
