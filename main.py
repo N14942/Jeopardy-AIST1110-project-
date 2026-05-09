@@ -160,12 +160,20 @@ class Round:
                 wager = p.do_wager(max_value=0, round=3)
                 wagers[p] = wager
             else:
-                # [INTERFACE HOOK]: 弹出输入框或滑块让玩家下注
-                # self.ui.scene = "wager_input"
+                # [INTERFACE HOOK]: let player wage
                 # wager = self.ui.get_user_wager(max_limit=p.score)
-                wager = 0 # 占位符
+                wager = 0 # hook
                 wagers[p] = wager
-            print(f"{p.name} 下注了 ${wagers[p]}")
+
+        #Final question reveal(interface)
+
+        results = {}
+
+        for p in eligible_players:
+            answer_status = True
+            final_q.reset_score(wager)
+            results[p] = True
+            results[p] = False
 
     def summary():
         pass
