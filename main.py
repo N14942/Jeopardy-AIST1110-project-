@@ -13,10 +13,24 @@ class Round:
         """Accept setting and apply on gameboard(timeout, difficulty...)."""
         pass
 
-    def buzz_session(self) -> AIPlayer | HumanPlayer:
+    def buzz_session(self) -> AIPlayer | HumanPlayer | None:
+        valid_p = [p for p in self.game.players if p.buzz == True]
+        if not valid_p:
+            return None
+        
+        for p in valid_p:
+            if isinstance(p, AIPlayer):
+                p.start_buzzing()
+
         while True:
-            for p in self.game.players:
-                if p.check_buzz() == True:
+            if self.game.current_question.get_buzzing_time_left() <= 0:
+                return None
+            for p in valid_p:
+                if isinstance(p, AIPlayer):
+                    key = self.game.current_question
+                else: 
+                    key = None #interface:get_event
+                if p.check_buzz(key) == True:
                     #interface+(... get chance)
                     return p
                 
@@ -30,22 +44,46 @@ class Round:
             q = chooser.select_question(self.all_question)
         else:
             while True:
-                index = chooser.select_question(
-                """add a function return an index represent selected question by human(interface)""")
+                index = None # index = self.ui.get_clicked_question_index()
                 if index != None:
                     q = self.game.all_question(index)
         return q
     
-    def question_answering_session(player: AIPlayer | HumanPlayer):
-        
-        pass
+    def question_answering_session(self, player: AIPlayer | HumanPlayer) -> bool:
+        if isinstance(player, AIPlayer):
+            player.start_thinking()
+
+        if isinstance(player, AIPlayer):
+            while True:
+                if player.get_answer() == True:
+                    player.update_score(self.game.current_question)
+                    break
+                if player.get_answer() == False:
+                    player.update_score(self.game.current_question)
+            
+        else:
+            while True:
+                answer = 0 #interface: add function detect answer
+                if player.get_answer(answer) == None:
+                    #out of time:interface
+                    return False
+                else:
+                    is_correct =  player.update_score(self.game.current_question)
+                    return is_correct
 
     def non_final_jeopardy(self):
         self.game.generate_questions()
+
         while self.game.used_questions < 16:
             self.game.current_question = self.select_question_session()
-            cur_player = self.buzz_session()
-
+            if cur_player is None:
+                    # 无人抢答或所有人都因为答错被封锁了，跳过本题
+                    # [INTERFACE HOOK]: 界面显示正确答案，停留 2 秒
+                    break
+        
+            while True:
+                cur_player = self.buzz_session()
+                if self.question_answering_session(cur_player):
 
 
         self.game.reset_board()

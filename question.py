@@ -57,6 +57,7 @@ class Question:
         
         self.start_ticks = 0
         self.is_daily_double = False
+        self.answered = False
 
     def set_as_daily_double(self):
         self.is_daily_double = True

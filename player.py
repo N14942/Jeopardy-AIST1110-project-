@@ -33,9 +33,10 @@ class Player(ABC):
     def update_player_info(self, name: str):
         self.name = name
 
-    def update_score(self, current_question) -> bool:
+    def update_score(self, current_question: Question) -> bool:
         if self.current_choice == current_question.correct_index:
             self.score += current_question.point
+            current_question.answered = True
             return True
         else:
             self.score -= current_question.point
@@ -64,9 +65,6 @@ class HumanPlayer(Player):
             self.score += amount
         else:
             self.score -= amount
-
-    def select_question(index: int):
-        return index
     
     def do_wager(self, input, max_value, round = 1):
         if round == 3:
@@ -127,9 +125,9 @@ class AIPlayer(Player):
         else:
             return random.randint(5, int(max(self.score, max_value)))
         
-    def select_question(self, q):
+    def select_question(self, q: list[Question]):
         pygame.time.delay(1000) 
-        valid = [x for x in q if x is not None]
+        valid = [x for x in q if x.answered == False]
         return random.choice(valid)
 
     def get_answer(self, current_question: Question) -> bool:
