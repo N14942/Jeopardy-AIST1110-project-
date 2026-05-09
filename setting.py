@@ -161,7 +161,7 @@ class Round:
             self.game.reset_question_states()
 
         self.game.reset_board()
-        self.round += self.current_round
+        self.round = self.game.current_round
         
     def final_jeopardy(self):
         eligible_players = [p for p in self.game.players if p.score > 0]
