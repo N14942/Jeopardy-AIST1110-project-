@@ -70,6 +70,18 @@ class HumanPlayer(Player):
             return None
         else:
             return index
+    
+    def do_wager(self, input, max_value, round = 1):
+        if round == 3:
+            min = 5
+            max = self.score
+        else:
+            min = 0
+            max = max(self.score, max_value)
+        if input > max or input < min:
+            return False
+        else:
+            return input
 
     def get_answer(self, current_question: Question, answer: int = None) -> bool:
         """logic: Update HumanPlayer's answer and store in the Player. 
