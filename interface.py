@@ -1,5 +1,5 @@
 # Create a simple single player interface,,,,,,
-#Haven't add the round and count interface
+#Haven't add the count interface
 import pygame
 import sys
 import math
@@ -238,6 +238,18 @@ class Interface:
                             print("Human Player buzzed!")
                             self.current_button_img = self.button2_img
                             self.enter_buzz_success_scene(0)
+                elif self.scene == "question" and self.game is not None and self.current_question is not None:
+                    key_to_answer = {pygame.K_1: 0,pygame.K_2: 1,pygame.K_3: 2,pygame.K_4: 3,}
+
+                    if event.key in key_to_answer:
+                        answer_index = key_to_answer[event.key]
+
+                        player = self.game.players[self.answering_player_index]
+                        q = self.current_question
+                        answered = player.get_answer(q, answer_index)
+                        print(answered)
+                        self.scene = "count"
+                        #use here to turn to count interface !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
             elif self.scene == "field" and self.input_active:
                 if event.key == pygame.K_RETURN:
@@ -358,17 +370,17 @@ class Interface:
         question = q.ques
         question = question.split()
         #print(question)
-        if len(question)<=12:
-         fir = ' '.join(question[0:6])
-         sec = ' '.join(question[6:12])
+        if len(question)<=11:
+         fir = ' '.join(question[0:5])
+         sec = ' '.join(question[5:11])
          question_text_1 = self.font.render(fir, True, self.text_color)
          question_text_2 = self.font.render(sec, True, self.text_color)
          self.screen.blit(question_text_1, (70, 50))
          self.screen.blit(question_text_2, (70, 100))
         else:
-            fir = ' '.join(question[0:6])
-            sec = ' '.join(question[6:12])
-            thir = ' '.join(question[12:])
+            fir = ' '.join(question[0:5])
+            sec = ' '.join(question[5:11])
+            thir = ' '.join(question[11:])
             question_text_1 = self.font.render(fir, True, self.text_color)
             question_text_2 = self.font.render(sec, True, self.text_color)
             question_text_3 = self.font.render(thir, True, self.text_color)
@@ -379,7 +391,7 @@ class Interface:
             option_text = self.font.render(f"{i + 1}. {option}", True, self.text_color)
             self.screen.blit(option_text, (120, 200 + i * 80))
     
-    #def draw_count(self)
+    #def draw_count(self) #I believe you !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     #all is buzz interface.....
     def enter_buzz_scene(self):
