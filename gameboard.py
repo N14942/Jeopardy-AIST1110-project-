@@ -72,7 +72,7 @@ class Gameboard:
 
     def reset_question_states(self):
         self.used_questions += 1
-        self.current_question = None
+        self.current_question.answered = True
         self.update_rankings()
 
         for player in self.players:

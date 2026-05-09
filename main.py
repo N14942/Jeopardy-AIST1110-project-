@@ -56,15 +56,37 @@ class Round:
         if isinstance(player, AIPlayer):
             while True:
                 if player.get_answer() == True:
-                    player.update_score(self.game.current_question)
-                    break
+                    is_correct =  player.update_score(self.game.current_question)
+                    return is_correct
                 if player.get_answer() == False:
                     player.update_score(self.game.current_question)
             
         else:
             while True:
-                answer = 0 #interface: add function detect answer
-                if player.get_answer(answer) == None:
+                answer = 0 #[hook]
+                """interface: logic: Detect HumanPlayer's answer. 
+                    Return True if answered successfully in time limit.
+                    False if no answer.
+                    None if no answer.
+                    (Design purpose: deal with valid answer/ timeout/ wait for answer)
+                    Please help me move time-detecting to get_answer in interface.
+                    time logic in previous player class:
+                    def get_answer(self, current_question: Question, answer: int = None) -> bool:
+                    (Design purpose: deal with valid answer/ timeout/ wait for answer)
+        
+        remaining_time = current_question.get_remaining_time()
+
+        if remaining_time <= 0:
+            self.current_choice = -1
+            return False
+        
+        if answer is not None:
+            self.current_choice = answer
+            return True
+
+        return None
+                    """
+                if answer == None:
                     #out of time:interface
                     return False
                 else:
@@ -76,26 +98,40 @@ class Round:
 
         while self.game.used_questions < 16:
             self.game.current_question = self.select_question_session()
-            if cur_player is None:
+            while True:
+                cur_player = self.buzz_session()
+                if cur_player is None:
                     # 无人抢答或所有人都因为答错被封锁了，跳过本题
                     # [INTERFACE HOOK]: 界面显示正确答案，停留 2 秒
                     break
-        
-            while True:
+
                 cur_player = self.buzz_session()
                 if self.question_answering_session(cur_player):
-
+                    #interface
+                    break
+                else:
+                    #interface
+                    pass #pass 为占位符
+            
+            self.game.reset_question_states()
 
         self.game.reset_board()
         self.round += self.current_round
         
-    def final_jeopardy():
-        pass
+    def final_jeopardy(self):
+        eligible_players = [p for p in self.game.players if p.score > 0]
+        if not eligible_players:
+            #No people > 0 mark :)
+            return
+        self.game.generate_questions() 
+        final_q = self.game.all_question
+        self.game.current_question = final_q
 
     def summary():
         pass
 
     def gamerun(self):
+        self.non_final_jeopardy()
         self.non_final_jeopardy()
         self.final_jeopardy()
         self.summary()

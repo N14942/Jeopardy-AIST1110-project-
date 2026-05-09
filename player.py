@@ -78,25 +78,6 @@ class HumanPlayer(Player):
         else:
             return input
 
-    def get_answer(self, current_question: Question, answer: int = None) -> bool:
-        """logic: Update HumanPlayer's answer and store in the Player. 
-            Return True if answered successfully in time limit.
-            False if no answer.
-            None if no answer.
-            (Design purpose: deal with valid answer/ timeout/ wait for answer)"""
-        
-        remaining_time = current_question.get_remaining_time()
-
-        if remaining_time <= 0:
-            self.current_choice = -1
-            return False
-        
-        if answer is not None:
-            self.current_choice = answer
-            return True
-
-        return None
-
 
 class AIPlayer(Player):
     def __init__(self, name: str, difficulty = Difficulty.MEDIUM):
