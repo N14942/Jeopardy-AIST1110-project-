@@ -23,12 +23,13 @@ class Interface:
         pygame.display.set_caption(title)
         self.clock = pygame.time.Clock()
         self.running = True
+        self.human_buzz_time = None
 
         # buzz button
         asset_dir = os.path.join(base_dir, "assets")
         self.button1_img = pygame.image.load(os.path.join(asset_dir, "button1.png")).convert_alpha()
 
-        self.button2_img = pygame.image.load(os.path.join(asset_dir, "button 2.png")).convert_alpha()
+        self.button2_img = pygame.image.load(os.path.join(asset_dir, "button2.png")).convert_alpha()
         self.button1_img = pygame.transform.scale(self.button1_img, (80, 80))
         self.button2_img = pygame.transform.scale(self.button2_img, (80, 80))
 
@@ -225,13 +226,14 @@ class Interface:
 
             # All typing action
             if event.type == pygame.KEYDOWN:
-                if self.scene == "buzz":
+                if self.scene == "buzz" and self.game is not None and self.current_question is not None:
                     human = self.game.players[0]
 
-                if human.buzz and human.check_buzz(event):
-                    if self.current_question.get_buzzing_time_left() > 0:
-                        print("Human Player buzzed!")
-                        self.enter_buzz_success_scene(0)
+                    if human.buzz and human.check_buzz(event):
+                        if self.current_question.get_buzzing_time_left() > 0:
+                            print("Human Player buzzed!")
+                            self.current_button_img = self.button2_img
+                            self.enter_buzz_success_scene(0)
 
             elif self.scene == "field" and self.input_active:
                 if event.key == pygame.K_RETURN:
@@ -360,16 +362,22 @@ class Interface:
 
     #all is buzz interface.....
     def enter_buzz_scene(self):
+        if self.current_question is None:
+            print("No current question. Cannot enter buzz scene.")
+            return
+
         self.scene = "buzz"
         self.answering_player_index = None
         self.buzz_hint = "Press SPACE to buzz!"
         self.current_button_img = self.button1_img
+        self.human_buzz_time = None
+
         self.current_question.reset_time()
+
         if self.game is not None:
-            for player in self.game.players:
-                player.buzz_reset()
-                if hasattr(player, "start_buzzing"):
-                    player.start_buzzing()
+            human = self.game.players[0]
+            human.buzz_reset()
+                
     def enter_buzz_success_scene(self, player_index):
         self.scene = "buzz_success"
         self.answering_player_index = player_index
@@ -377,27 +385,19 @@ class Interface:
 
         player = self.game.players[player_index]
         self.buzz_success_message = f"{player.name} buzzed!"
-        if player_index == 0:
-            self.current_button_img = self.button2_img
-        else:
-            self.current_button_img = self.button1_img
+        self.current_button_img = self.button2_img
+        
     def update_buzz_scene(self):
-        if self.game is None or self.current_question is None:
+        if self.current_question is None:
             return
 
         q = self.current_question
+
         if q.get_buzzing_time_left() <= 0:
             print("Buzz time out!")
             self.buzz_hint = "No one buzzed!"
             self.enter_round_scene()
             return
-        for i in range(1, len(self.game.players)):
-            player = self.game.players[i]
-
-            if player.buzz and player.check_buzz(q):
-                print(f"{player.name} buzzed!")
-                self.enter_buzz_success_scene(i)
-                return
     def draw_buzz(self):
         self.screen.fill(self.bg_color)
 
@@ -421,15 +421,6 @@ class Interface:
     # button image
         button_rect = self.current_button_img.get_rect(center=(self.width // 2, 305))
         self.screen.blit(self.current_button_img, button_rect)
-
-    # AI hint
-        ai_hint = self.small_font.render(
-        "AI players may buzz automatically.",
-        True,
-        self.text_color
-    )
-        ai_hint_rect = ai_hint.get_rect(center=(self.width // 2, 370))
-        self.screen.blit(ai_hint, ai_hint_rect)
 
     # buzz countdown
         time_left = math.ceil(q.get_buzzing_time_left())
@@ -462,15 +453,11 @@ class Interface:
 
                 y += 28
 
-
-    def draw_buzz_success(self):
+   def draw_buzz_success(self):
         self.screen.fill(self.bg_color)
-
-    # 谁抢到了
         title = self.font.render(self.buzz_success_message, True, self.button_bg)
         title_rect = title.get_rect(center=(self.width // 2, 160))
         self.screen.blit(title, title_rect)
-    # Human 抢到是 button2；AI 抢到仍是 button1
         button_rect = self.current_button_img.get_rect(center=(self.width // 2, 300))
         self.screen.blit(self.current_button_img, button_rect)
 
