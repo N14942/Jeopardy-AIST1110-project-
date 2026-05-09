@@ -154,6 +154,12 @@ class Interface:
                 self.current_question.reset_time()
                 self.scene = "question"
             #check whether times out
+
+            if self.scene == "round":
+                elapsed = (pygame.time.get_ticks() - self.round_start_ticks) / 1000
+                if elapsed >= self.round_limit:
+                    self.scene = "choose"
+                    self.choose_start_ticks = pygame.time.get_ticks()
             if self.scene == "choose" and self.get_choose_time_left() <= 0:
                 print("time out")
                 self.enter_round_scene()
