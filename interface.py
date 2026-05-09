@@ -81,6 +81,7 @@ class Interface:
         self.round_start_ticks = 0
         self.choose_time_limit = 5
         self.choose_start_ticks = 0
+        self.play_music(self.music_path_1)
         
 
     def create_choices(self):
@@ -108,7 +109,9 @@ class Interface:
         pygame.mixer.music.set_volume(0.3)
         pygame.mixer.music.play(-1)
     def update_music_by_round(self):
-        if self.current_round == 3:
+        current_round = self.game.current_round if self.game is not None else 1
+
+        if current_round == 3:
             self.play_music(self.music_path_2)
         else:
             self.play_music(self.music_path_1)
@@ -151,8 +154,8 @@ class Interface:
                     player = self.game.players[self.answering_player_index]
                     if hasattr(player, "start_thinking"):
                         player.start_thinking()
-                self.current_question.reset_time()
-                self.scene = "question"
+                    self.current_question.reset_time()
+                    self.scene = "question"
             #check whether times out
 
             if self.scene == "round":
