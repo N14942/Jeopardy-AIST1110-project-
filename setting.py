@@ -161,7 +161,7 @@ class Session:
         while self.game.used_questions < 16:
             self.select_question_session()
             q = self.game.current_question
-
+            
             while True:
                 cur_player = self.buzz_session()
                 if cur_player is None:
@@ -227,6 +227,8 @@ class Session:
 def main():
     game_logic = Gameboard()
     ui = Interface(game_logic)
+    game_logic.generate_questions()
+    game_logic.generate_aiplayers()
 
     # Run Main Loop
     ui.run() # Run Function 'run()' in 'interface.py'
