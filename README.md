@@ -1,4 +1,4 @@
-# 🎮 AI-Powered Jeopardy! (AIST1110 GROUP PROJECT)
+# 🎮 AI-Powered Jeopardy! ***AIST1110 GROUP PROJECT***
 This project is an interactive, AI-driven version of the classic TV quiz show Jeopardy!, developed as a group assignment for the AIST1110 (Introduction to Computing Using Python) course.
 
 ## 🚀 Key Features
