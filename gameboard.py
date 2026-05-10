@@ -2,6 +2,7 @@ from player import HumanPlayer, AIPlayer, Difficulty
 from question import Question, AI_Manager
 from enum import Enum
 import random
+import pygame
 
 class Gameboard:
     def __init__(self, difficulty: Difficulty = Difficulty.MEDIUM, 
@@ -40,9 +41,12 @@ class Gameboard:
     def generate_questions(self):
         if self.current_round == 3:
             field = random.choice(self.categories)
-            final_question = Question(field=field, point=0, timeout=10) 
+            final_question = Question(field=field,point=0,timeout=10,buzzing_time=self.buzzing_time)
             final_question.generate(self.ai_manager, round_num=3)
-            self.all_question = final_question
+
+            self.all_question = [final_question]
+            self.current_question = final_question
+            return
         else:
             point_list = [200, 400, 600, 1000]
             point_list = [x * self.current_round for x in point_list]
@@ -68,6 +72,9 @@ class Gameboard:
     def reset_board(self):
         self.all_question = []
         self.used_questions = 0
+        self.current_round += 1
+    
+    def next_round(self):
         self.current_round += 1
 
     def reset_question_states(self):
