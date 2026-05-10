@@ -41,6 +41,3 @@ The project is built on Object-Oriented Programming (OOP) principles for high ma
 - Start Game:
   `python setting.py`
 
-Folder: music: Store music resources.
-
-Folder: assets: Store art resources.
