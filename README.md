@@ -9,9 +9,9 @@ Integrates Azure OpenAI (GPT-4o) to generate real-time multiple-choice questions
 Features AI players with "human-like" behaviors. They possess different Difficulty levels (Easy, Medium, Hard) that affect their accuracy, reaction time, and wagering strategies.
 
 - Full 3-Round Experience:
-  1️⃣ Jeopardy! Round: Standard gameplay with one hidden Daily Double.
-  2️⃣ Double Jeopardy! Round: Doubled point values with two hidden Daily Doubles.
-  3️⃣ Final Jeopardy! Round: High-stakes wagering based on a single final category.
+  - 1️⃣ Jeopardy! Round: Standard gameplay with one hidden Daily Double.
+  - 2️⃣ Double Jeopardy! Round: Doubled point values with two hidden Daily Doubles.
+  - 3️⃣ Final Jeopardy! Round: High-stakes wagering based on a single final category.
   
 - Customization: 
 Supports adjustable game difficulty and allows players to input custom fields (categories) for a personalized quiz experience.
