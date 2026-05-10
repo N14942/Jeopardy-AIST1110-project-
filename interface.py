@@ -44,10 +44,13 @@ class Interface:
 
         
         #color
-        self.bg_color = (251,226,162)
-        self.text_color = (140,140,148)
+        self.bg_color = (141,166,210)
+        self.text_color = (249,215,124)
         self.button_bg = (163,111,90)
         self.frame_color = (217,179,140)
+        #self.used_color_button_bg
+        #self.used_color_button_text
+        #Here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         self.font = pygame.font.SysFont(None, 56)
         self.small_font = pygame.font.SysFont(None, 30)
@@ -221,8 +224,8 @@ class Interface:
                             print("clicked choice index:", i)
                             print("question index:", q_index)
 
-                            self.current_question = self.game.select_question(q_index)
-
+                            self.current_question = self.game.all_question[q_index]
+                            self.game.current_question = self.current_question
                             if self.current_question is None:
                                 print("No valid question selected.")
                                 return
@@ -391,8 +394,7 @@ class Interface:
             option_text = self.font.render(f"{i + 1}. {option}", True, self.text_color)
             self.screen.blit(option_text, (120, 200 + i * 80))
     
-    #def draw_count(self) #I believe you !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+    
     #all is buzz interface.....
     def enter_buzz_scene(self):
         if self.current_question is None:
@@ -518,4 +520,3 @@ def draw_counting(self):
     hint_text = score_font.render("계속하려면 아무 키나 누르세요...", True, (200, 200, 200))
     hint_rect = hint_text.get_rect(center=(self.screen_width // 2, self.screen_height - 100))
     self.screen.blit(hint_text, hint_rect)
-
