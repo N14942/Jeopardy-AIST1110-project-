@@ -1,60 +1,10 @@
 # Create a simple single player interface,,,,,,
+#Haven't add the count interface
 import pygame
 import sys
 import math
 import random
 import os
-
-class Button:
-    def __init__(self, x, y, width, height, text, font, 
-                 bg_color=(139, 69, 19), 
-                 hover_color=(160, 82, 45),
-                 text_color=(255, 255, 255),
-                 action=None):
-        self.rect = pygame.Rect(x, y, width, height)
-        self.text = text
-        self.font = font
-        
-        #color
-        self.base_color = bg_color
-        self.hover_color = hover_color
-        self.text_color = text_color
-        self.used_bg = (200, 200, 200)
-        self.used_text = (0, 0, 0)
-        
-        self.current_bg = bg_color
-        self.is_answered = False
-        self.action = action
-
-    def draw(self, screen):
-        if self.is_answered:
-            self.current_bg = self.used_bg
-            txt_color = self.used_text
-        else:
-            mouse_pos = pygame.mouse.get_pos()
-            if self.rect.collidepoint(mouse_pos):
-                self.current_bg = self.hover_color
-            else:
-                self.current_bg = self.base_color
-            txt_color = self.text_color
-
-        pygame.draw.rect(screen, self.current_bg, self.rect)
-        pygame.draw.rect(screen, (50, 50, 50), self.rect, 2) # 边框
-
-        text_surf = self.font.render(self.text, True, txt_color)
-        text_rect = text_surf.get_rect(center=self.rect.center)
-        screen.blit(text_surf, text_rect)
-
-    def handle_event(self, event):
-        if self.is_answered: 
-            return
-
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            if self.rect.collidepoint(event.pos):
-                if self.action:
-                    self.action()
-                return True
-        return False
 
 class Interface:
     def __init__(self, game_logic=None, width=900, height=600, title="Jeopardy Game"):
@@ -98,10 +48,10 @@ class Interface:
         self.text_color = (249,215,124)
         self.button_bg = (163,111,90)
         self.frame_color = (217,179,140)
-
-        self.used_button_bg = (200, 200, 200)   # 浅灰色
-        self.used_button_text = (0, 0, 0)
-
+        self.used_color_button_bg = (192,192,192)
+        self.used_color_button_frame = (128,128,128)
+        self.used_text = (96,96,96)
+        
 
         self.font = pygame.font.SysFont(None, 56)
         self.small_font = pygame.font.SysFont(None, 30)
@@ -149,29 +99,12 @@ class Interface:
         box_height = 80
         gap = 10
 
-        scores = [200, 400, 600, 1000]
-
         for col in range(4):
             for row in range(5):
                 x = start_x + col * (box_width + gap)
                 y = start_y + row * (box_height + gap)
-                
-                if row == 0:
-                    text_content = self.fields[col]
-                else:
-                    text_content = f"${scores[row - 1]}"
-                q_idx = col * 4 + (row - 1) if row > 0 else -1
-                
-                new_button = Button(x, y, box_width, box_height, 
-                                    text_content, self.font, q_idx)
-                
-                self.choices.append(new_button)
-
-    def reset_choosed_choice(self, index):
-        for button in self.choices:
-            if button.action_index == index:
-                button.is_answered = True
-                break
+                rect = pygame.Rect(x, y, box_width, box_height)
+                self.choices.append(rect)
 
 #Music!
     def play_music(self, music_path):
@@ -193,6 +126,22 @@ class Interface:
         self.scene = "round"
         self.round_start_ticks = pygame.time.get_ticks()
         self.update_music_by_round()
+    def enter_final_category_scene(self):
+        if self.game is None:
+            print("No game object.")
+            return
+
+        if self.game.current_round != 3:
+            return
+
+        if self.game.current_question is None:
+            if len(self.game.all_question) == 0:
+                self.game.generate_questions()
+            self.game.current_question = self.game.all_question[0]
+
+        self.current_question = self.game.current_question
+        self.scene = "final_category"
+        self.final_category_start_ticks = pygame.time.get_ticks()
 
     def run(self):
         while self.running:
@@ -249,9 +198,14 @@ class Interface:
                     self.scene = "question"
             if self.scene == "choose" and self.get_choose_time_left() <= 0:
                 print("time out")
-                self.enter_round_scene()
-                self.current_question_index = random.randint(4, 15)
-                print(self.current_question_index)
+                valid_index = [i for i, q in enumerate(self.game.all_question) if q is not None and not q.answered]
+                q_index = random.choice(valid_indices)
+                self.current_question_index = q_index
+                self.current_question = self.game.all_question[q_index]
+                self.game.current_question = self.current_question
+                self.enter_buzz_scene()
+
+                
 
             if self.scene == "draw_count":
                 elapsed = (pygame.time.get_ticks() - self.result_start_ticks) / 1000
@@ -306,9 +260,15 @@ class Interface:
 
                             self.current_question = self.game.all_question[q_index]
                             self.game.current_question = self.current_question
+
                             if self.current_question is None:
                                 print("No valid question selected.")
                                 return
+
+                            if self.current_question.answered:
+                                print("This question has already been answered.")
+                                return
+
                             self.enter_buzz_scene()
 
             # All typing action
@@ -334,12 +294,18 @@ class Interface:
                         is_correct = player.update_score(q)
                         self.scene = "count"
                 elif self.scene == "count":
-                        if self.game is not None and self.current_question is not None:
-                            self.game.reset_question_states()
+                    if self.game is not None and self.current_question is not None:
+                        self.game.reset_question_states()
 
-                        self.current_question = None
-                        self.answering_player_index = None
-                        self.game.reset_board()
+                    self.current_question = None
+                    self.answering_player_index = None
+                    self.game.current_question = None
+                    self.game.next_round()
+
+                    if self.game.current_round > 3:
+                        print("Game finished.")
+                        self.running = False
+                    else:
                         self.enter_round_scene()
                         #start next round
                 elif self.scene == "field" and self.input_active:
@@ -384,37 +350,40 @@ class Interface:
         button_text = self.font.render("START", True, (255, 255, 255))
         self.screen.blit(button_text, (385, 325))
 
-    def setting_field(self):
-        self.screen.fill(self.bg_color)
-        title = self.font.render("Choose or Type Any Field you like !", True, self.text_color)
-        self.screen.blit(title, (110, 60))
-
-    
-        for i, rect in enumerate(self.field_buttons):
-            pygame.draw.rect(self.screen, self.button_bg, rect)
-            pygame.draw.rect(self.screen, self.frame_color, rect, 3)
-            text = self.font.render(self.fields[i], True, (255, 255, 255))
-            self.screen.blit(text, (rect.x + 25, rect.y + 18))
-
-   
-        box_color = (255, 255, 255) if self.input_active else (220, 220, 220)
-        pygame.draw.rect(self.screen, box_color, self.input_box)
-        pygame.draw.rect(self.screen, self.frame_color, self.input_box, 3)
-        typed_text = self.font.render(self.input_text, True, self.text_color)
-        self.screen.blit(typed_text, (self.input_box.x + 15, self.input_box.y + 15))
-        hint_font = pygame.font.SysFont(None, 30)
-        hint = hint_font.render("Click box -> Type a field -> Press Enter", True, self.text_color)
-        self.screen.blit(hint, (220, 490))
 
     
     def draw_choose_question(self):
         self.screen.fill(self.bg_color)
 
-        for button in self.choices:
-            button.draw(self.screen)
+        scores = [200, 400, 600, 1000]
+
+        for index, rect in enumerate(self.choices):
+            row = index % 5
+            col = index // 5
+            box_bg_color=self.button_bg
+            text_frame_color=self.frame_color 
+            text_color = (255,255,255)
+
+
+            if row == 0:
+                text_content = self.fields[col]
+            else:
+                q_index = col * 4 + (row - 1)
+                text_content = f"${scores[row - 1]}"
+                if (self.game is not None and 0 <= q_index < len(self.game.all_question) and self.game.all_question[q_index].answered ):
+                    box_bg_color = self.used_color_button_bg
+                    text_frame_color = self.used_color_button_frame
+                    text_color = self.used_text
+                    text_content = "Answered"
+
+
+            pygame.draw.rect(self.screen, box_bg_color, rect)
+            pygame.draw.rect(self.screen, text_frame_color, rect, 3)
+            text = self.font.render(text_content, True, text_color)
+            self.screen.blit(text, (rect.x + 5, rect.y + 25))
 
         time_left = math.ceil(self.get_choose_time_left())
-        time_text = self.font.render(f"Time: {time_left}", True, (0,0,0))
+        time_text = self.font.render(f"Time: {time_left}", True, self.text_color)
         self.screen.blit(time_text, (650, 35))
 
     def draw_round_info(self):
@@ -563,46 +532,29 @@ class Interface:
         hint_rect = hint.get_rect(center=(self.width // 2, 420))
         self.screen.blit(hint, hint_rect)
 
-    def draw_counting(self):
-        self.screen.fill((30, 30, 30))
-        # font
-        try:
-            title_font = pygame.font.SysFont("malgungothic", 50, bold=True)
-            score_font = pygame.font.SysFont("malgungothic", 30)
-        except:
-            title_font = pygame.font.SysFont(None, 60)
-            score_font = pygame.font.SysFont(None, 35)
-        
-        title_text = title_font.render("--- CURRENT SCORE ---", True, (255, 255, 255))
-        title_rect = title_text.get_rect(center=(self.width // 2, 80))
-        self.screen.blit(title_text, title_rect)
-
-        for i, player in enumerate(self.game.players):
-            y_pos = 180 + i * 80
-            # player name
-            name_text = score_font.render(f"{player.name}", True, (255, 255, 255))
-            self.screen.blit(name_text, (100, y_pos))
-
-            # bar background
-            bar_x = 250
-            bar_max_width = 400
-            pygame.draw.rect(self.screen, (100, 100, 100), (bar_x, y_pos, bar_max_width, 30))
-            
-            #score ratio bar
-            score_ratio = min(max(player.score, 0) / 2000, 1.0) 
-            bar_color = (0, 150, 255) if player.score >= 0 else (255, 50, 50)
-            current_bar_width = int(bar_max_width * score_ratio)
-        
-            pygame.draw.rect(self.screen, bar_color, (bar_x, y_pos, current_bar_width, 30))
-            
-            # score text
-            val_text = score_font.render(f"${player.score}", True, bar_color)
-            self.screen.blit(val_text, (bar_x + bar_max_width + 20, y_pos))
-
-        hint_text = score_font.render("Press any key to continue...", True, (200, 200, 200))
-        hint_rect = hint_text.get_rect(center=(self.screen_width // 2, self.screen_height - 100))
+    def draw_counting(self):  
+        self.screen.fill(self.bg_color)   
+        title_font = pygame.font.SysFont("malgungothic", 50, bold=True)    
+        score_font = pygame.font.SysFont("malgungothic", 30)        
+        title_text = title_font.render("--- Current Score Status ---", True, (255, 255, 255))    
+        title_rect = title_text.get_rect(center=(self.width // 2, 80))    
+        self.screen.blit(title_text, title_rect)    
+        for i, player in enumerate(self.game.players):        
+            y_pos = 180 + i * 80                
+            name_text = score_font.render(f"{player.name}", True, (255, 255, 255))        
+            self.screen.blit(name_text, (100, y_pos))                
+            bar_x = 250        
+            bar_max_width = 400        
+            pygame.draw.rect(self.screen, (100, 100, 100), (bar_x, y_pos, bar_max_width, 30))                
+            score_ratio = min(max(player.score, 0) / 2000, 1.0)        
+            bar_color = (0, 150, 255) if player.score >= 0 else (255, 50, 50)        
+            current_bar_width = int(bar_max_width * score_ratio)                
+            pygame.draw.rect(self.screen, bar_color, (bar_x, y_pos, current_bar_width, 30))                
+            val_text = score_font.render(f"${player.score}", True, bar_color)        
+            self.screen.blit(val_text, (bar_x + bar_max_width + 20, y_pos))    
+        hint_text = score_font.render("Press any key to continue...", True, (200, 200, 200))    
+        hint_rect = hint_text.get_rect(center=(self.width // 2, self.height - 100))    
         self.screen.blit(hint_text, hint_rect)
-
     def draw_final_category(self):
         self.screen.fill(self.bg_color)
 
