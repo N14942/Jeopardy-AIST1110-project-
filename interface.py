@@ -564,30 +564,46 @@ class Interface:
         hint_rect = hint.get_rect(center=(self.width // 2, 420))
         self.screen.blit(hint, hint_rect)
 
-    def draw_counting(self):  
-        self.screen.fill(self.bg_color)  
-        self.screen.fill((30, 30, 30))    
-        title_font = pygame.font.SysFont("malgungothic", 50, bold=True)    
-        score_font = pygame.font.SysFont("malgungothic", 30)        
-        title_text = title_font.render("--- Current Score Status ---", True, (255, 255, 255))    
-        title_rect = title_text.get_rect(center=(self.width // 2, 80))    
-        self.screen.blit(title_text, title_rect)    
-        for i, player in enumerate(self.game.players):        
-            y_pos = 180 + i * 80                
-            name_text = score_font.render(f"{player.name}", True, (255, 255, 255))        
-            self.screen.blit(name_text, (100, y_pos))                
-            bar_x = 250        
-            bar_max_width = 400        
-            pygame.draw.rect(self.screen, (100, 100, 100), (bar_x, y_pos, bar_max_width, 30))                
-            score_ratio = min(max(player.score, 0) / 2000, 1.0)        
-            bar_color = (0, 150, 255) if player.score >= 0 else (255, 50, 50)        
-            current_bar_width = int(bar_max_width * score_ratio)                
-            pygame.draw.rect(self.screen, bar_color, (bar_x, y_pos, current_bar_width, 30))                
-            val_text = score_font.render(f"${player.score}", True, bar_color)        
-            self.screen.blit(val_text, (bar_x + bar_max_width + 20, y_pos))    
-        hint_text = score_font.render("Press any key to continue...", True, (200, 200, 200))    
-        hint_rect = hint_text.get_rect(center=(self.width // 2, self.height - 100))    
+    def draw_counting(self):
+        self.screen.fill((30, 30, 30))
+        # font
+        try:
+            title_font = pygame.font.SysFont("malgungothic", 50, bold=True)
+            score_font = pygame.font.SysFont("malgungothic", 30)
+        except:
+            title_font = pygame.font.SysFont(None, 60)
+            score_font = pygame.font.SysFont(None, 35)
+        
+        title_text = title_font.render("--- CURRENT SCORE ---", True, (255, 255, 255))
+        title_rect = title_text.get_rect(center=(self.width // 2, 80))
+        self.screen.blit(title_text, title_rect)
+
+        for i, player in enumerate(self.game.players):
+            y_pos = 180 + i * 80
+            # player name
+            name_text = score_font.render(f"{player.name}", True, (255, 255, 255))
+            self.screen.blit(name_text, (100, y_pos))
+
+            # bar background
+            bar_x = 250
+            bar_max_width = 400
+            pygame.draw.rect(self.screen, (100, 100, 100), (bar_x, y_pos, bar_max_width, 30))
+            
+            #score ratio bar
+            score_ratio = min(max(player.score, 0) / 2000, 1.0) 
+            bar_color = (0, 150, 255) if player.score >= 0 else (255, 50, 50)
+            current_bar_width = int(bar_max_width * score_ratio)
+        
+            pygame.draw.rect(self.screen, bar_color, (bar_x, y_pos, current_bar_width, 30))
+            
+            # score text
+            val_text = score_font.render(f"${player.score}", True, bar_color)
+            self.screen.blit(val_text, (bar_x + bar_max_width + 20, y_pos))
+
+        hint_text = score_font.render("Press any key to continue...", True, (200, 200, 200))
+        hint_rect = hint_text.get_rect(center=(self.screen_width // 2, self.screen_height - 100))
         self.screen.blit(hint_text, hint_rect)
+
     def draw_final_category(self):
         self.screen.fill(self.bg_color)
 
