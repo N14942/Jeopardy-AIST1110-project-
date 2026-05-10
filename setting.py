@@ -140,7 +140,7 @@ class Session:
 
     def non_final_jeopardy(self, n: int):
         self.game.reset_board()
-        self.next_round(self, n)
+        self.next_round(n)
 
         self.ui.scene = "round_info"
         self.ui.reset_time()
@@ -171,8 +171,7 @@ class Session:
         
     def final_jeopardy(self):
         self.game.reset_board()
-        self.next_round(self, 3)
-
+        self.next_round(3)
         eligible_players = [p for p in self.game.players if p.score > 0]
         if not eligible_players:
             #No people > 0 mark :)
