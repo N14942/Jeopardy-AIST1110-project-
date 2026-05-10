@@ -1,29 +1,45 @@
-# Jeopardy-AIST1110-project-
-This is a Jeopardy Game(AIST1110-project).
+# 🎮 AI-Powered Jeopardy! (AIST1110 Project)
+This project is an interactive, AI-driven version of the classic TV quiz show Jeopardy!, developed as a group assignment for the AIST1110 (Introduction to Computing Using Python) course.
 
-Main function:
+## 🚀 Key Features
+### Dynamic AI Question Generation: 
+Integrates Azure OpenAI (GPT-4o) to generate real-time multiple-choice questions tailored to specific categories and point values.
+### Sophisticated AI Opponents: 
+Features AI players with "human-like" behaviors. They possess different Difficulty levels (Easy, Medium, Hard) that affect their accuracy, reaction time, and wagering strategies.
+### Full 3-Round Experience:
+#### Jeopardy! Round: 
+Standard gameplay with one hidden Daily Double.
+#### Double Jeopardy! Round: 
+Doubled point values with two hidden Daily Doubles.
+#### Final Jeopardy! Round:
+High-stakes wagering based on a single final category.
+#### Customization: 
+Supports adjustable game difficulty and allows players to input custom fields (categories) for a personalized quiz experience.
+#### Rich Multimedia UI: 
+Built with Pygame, featuring a 9-scene architecture, smooth transitions, background music, and interactive visual effects.
 
-1, Use OpenAI API to generate multiple choices.
+## 🛠 Project Structure & Module Overview
+The project is built on Object-Oriented Programming (OOP) principles for high maintainability and scalability.
 
-2, Create AIPlayers with human-like habits and different ability, which can answer questions, select questions and buzz.
+## 📄 Core Files
+--- File Name & Description ---
+- `player.py`: Defines the Player ABC and its subclasses: HumanPlayer and AIPlayer.
+- `question.py`: Contains AI_Manager (API handling) and Question (data management).
+- `gameboard.py`: Manages the overall game state, including player rankings and board setup.
+- `interface.py`: Handles the Pygame GUI, Button classes, and screen rendering logic.
+- `setting.py`: Contains the Session class, which coordinates all modules to run the game.
+- `Game_flow.txt`: Detailed documentation of game rules, scoring logic, and round transitions.
 
-3, Include multiple rounds: JEOPARDY, Double JEOPARDY and Final JEOPARDY.
+## 📂 Resource Folders
+- `/music`: Contains background tracks and sound effects for each round.
+- `/assets`: Stores visual resources, including buttons and background images.
 
-4, Characteristic function: support difficulty change and customize field.
-
-Functions of different files:
-
-Player.py: Store class AIPlayer and HumanPlayer.
-
-Question.py: Store AIManager and Question class (Store question information and generate questions.)
-
-Gameboard.py: Store class Gameboard for managing multiple players and questions.
-
-interface.py: Store class interface and primitive class button, which onitor and get players' input, and make visual and sound effects. 
-
-setting.py: Store class Sessions, which runs the game using above classes.
-
-Game_flow.txt: Store rules and process of game running.
+## ⚙️ How to Run
+- Install Requirements:
+  `pip install pygame openai python-dotenv`
+- Configure API: Place your Azure OpenAI API key in a `.env` file or provide it within the `AI_Manager` initialization.
+- Start Game:
+  `python setting.py`
 
 Folder: music: Store music resources.
 
