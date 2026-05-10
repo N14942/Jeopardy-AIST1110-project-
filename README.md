@@ -6,9 +6,11 @@ This project is an interactive, AI-driven version of the classic TV quiz show Je
 
 Integrates Azure OpenAI (GPT-4o) to generate real-time multiple-choice questions tailored to specific categories and point values.
 
+
 **[ Sophisticated AI Opponents ]** 
 
 Features AI players with "human-like" behaviors. They possess different Difficulty levels (Easy, Medium, Hard) that affect their accuracy, reaction time, and wagering strategies.
+
 
 **[ Full 3-Round Experience ]**
 
@@ -17,19 +19,24 @@ Features AI players with "human-like" behaviors. They possess different Difficul
 2️⃣ Double Jeopardy! Round: Doubled point values with two hidden Daily Doubles.
 
 3️⃣ Final Jeopardy! Round: High-stakes wagering based on a single final category.
+
   
 **[ Customization ]** 
 
 Supports adjustable game difficulty and allows players to input custom fields (categories) for a personalized quiz experience.
 
+
 **[ Rich Multimedia UI ]** 
 
 Built with Pygame, featuring a 9-scene architecture, smooth transitions, background music, and interactive visual effects.
 
+
 ## 🛠 Project Structure & Module Overview
 The project is built on Object-Oriented Programming (OOP) principles for high maintainability and scalability.
 
+
 ## 📄 Core Files
+
 `player.py`: Defines the Player ABC and its subclasses: HumanPlayer and AIPlayer.
 
 `question.py`: Contains AI_Manager (API handling) and Question (data management).
@@ -39,7 +46,9 @@ The project is built on Object-Oriented Programming (OOP) principles for high ma
 `interface.py`: Handles the Pygame GUI, Button classes, and screen rendering logic.
 
 `setting.py`: Contains the Session class, which coordinates all modules to run the game.
+
 `Game_flow.txt`: Detailed documentation of game rules, scoring logic, and round transitions.
+
 
 ## 📂 Resource Folders
 
@@ -47,15 +56,18 @@ The project is built on Object-Oriented Programming (OOP) principles for high ma
 
 `/assets`: Stores visual resources, including buttons and background images.
 
+
 ## ⚙️ How to Run
 
 **[ Install Requirements ]**
 
   `pip install pygame openai python-dotenv`
 
+
 **[ Configure API ]**
 
 Place your Azure OpenAI API key in a `.env` file or provide it within the `AI_Manager` initialization.
+
 
 **[ Start Game ]**
 
