@@ -1,20 +1,28 @@
-# Create a simple single player interface,,,,,,
-#Haven't add the count interface
 import pygame
 import sys
 import math
 import random
 import os
+from enum import Enum
+
+class Scene(Enum):
+    START = "start"
+    ROUND = "round"
+    CHOOSE = "choose"
+    BUZZ = "buzz"
+    BUZZ_SUCCESS = "buzz_success"
+    QUESTION = "question"
+    COUNT = "count"
+    FINAL_CATEGORY = "final_category"
 
 class Interface:
     def __init__(self, game_logic=None, width=900, height=600, title="Jeopardy Game"):
         pygame.init()
-
         pygame.mixer.init()
+
         #music resource
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        self.music_path_1 = os.path.join(base_dir, "music", "humansandmonsterslivedtogetherinharmonymix.ogg")
-        self.music_path_2 = os.path.join(base_dir, "music", "n-Dimensions (Main Theme).mp3")
+        self.base_dir = os.path.dirname(os.path.abspath(__file__))
+        self.asset_music()
         self.current_music_path = None
         self.game = game_logic
         self.width = width
@@ -26,13 +34,7 @@ class Interface:
         self.human_buzz_time = None
 
         # buzz button
-        asset_dir = os.path.join(base_dir, "assets")
-        self.button1_img = pygame.image.load(os.path.join(asset_dir, "button1.png")).convert_alpha()
-
-        self.button2_img = pygame.image.load(os.path.join(asset_dir, "button2.png")).convert_alpha()
-        self.button1_img = pygame.transform.scale(self.button1_img, (80, 80))
-        self.button2_img = pygame.transform.scale(self.button2_img, (80, 80))
-
+        self.asset_button()
         self.current_button_img = self.button1_img
 
         self.current_question = None
@@ -42,7 +44,6 @@ class Interface:
         self.buzz_success_duration = 2
         self.buzz_success_message = ""
 
-        
         #color
         self.bg_color = (141,166,210)
         self.text_color = (249,215,124)
@@ -52,35 +53,19 @@ class Interface:
         self.used_color_button_frame = (128,128,128)
         self.used_text = (96,96,96)
         
-
+        #text
         self.font = pygame.font.SysFont(None, 56)
         self.small_font = pygame.font.SysFont(None, 30)
 
         #start option on initial interface
-        self.scene = "start"
+        self.scene = Scene.START
         self.start_button = pygame.Rect(350, 300, 200, 80)
 
-        #choose field or enter
-        self.fields = self.game.categories if self.game is not None else ["Science", "History", "Art", "Culture"]
-        self.field_buttons = []
-
-        start_x = 150
-        start_y = 150
-        button_w = 255
-        button_h = 70
-        gap = 50
-
-        for i in range (len(self.fields)):
-            x = start_x + (i % 2) * (button_w + gap)
-            y = start_y + (i // 2) * (button_h + gap)
-            self.field_buttons.append(pygame.Rect(x, y, button_w, button_h))
-
-        self.input_box = pygame.Rect(220, 420, 460, 60)
-        self.input_text = ""
-        self.input_active = False
+        #choose field
+        self.creat_field_choice()
         self.selected_field = None
-
         self.create_choices()
+
         #time
         self.round_limit = 2
         self.round_start_ticks = 0
@@ -91,6 +76,8 @@ class Interface:
         self.play_music(self.music_path_1)
         
 
+
+#assets
     def create_choices(self):
         self.choices = []
         start_x = 30
@@ -98,13 +85,39 @@ class Interface:
         box_width = 200
         box_height = 80
         gap = 10
-
         for col in range(4):
             for row in range(5):
                 x = start_x + col * (box_width + gap)
                 y = start_y + row * (box_height + gap)
                 rect = pygame.Rect(x, y, box_width, box_height)
                 self.choices.append(rect)
+
+    def creat_field_choice(self):
+        self.fields = self.game.categories if self.game is not None else ["Science", "History", "Art", "Culture"]
+        self.field_buttons = []
+        start_x = 150
+        start_y = 150
+        button_w = 255
+        button_h = 70
+        gap = 50
+        for i in range (len(self.fields)):
+            x = start_x + (i % 2) * (button_w + gap)
+            y = start_y + (i // 2) * (button_h + gap)
+            self.field_buttons.append(pygame.Rect(x, y, button_w, button_h))
+
+    def asset_button(self):
+        asset_dir = os.path.join(self.base_dir, "assets")
+        self.button1_img = pygame.image.load(os.path.join(asset_dir, "button1.png")).convert_alpha()
+
+        self.button2_img = pygame.image.load(os.path.join(asset_dir, "button2.png")).convert_alpha()
+        self.button1_img = pygame.transform.scale(self.button1_img, (80, 80))
+        self.button2_img = pygame.transform.scale(self.button2_img, (80, 80))
+    
+    def asset_music(self):
+        self.music_path_1 = os.path.join(self.base_dir, "music", "humansandmonsterslivedtogetherinharmonymix.ogg")
+        self.music_path_2 = os.path.join(self.base_dir, "music", "n-Dimensions (Main Theme).mp3")
+
+
 
 #Music!
     def play_music(self, music_path):
@@ -115,6 +128,7 @@ class Interface:
         pygame.mixer.music.load(music_path)
         pygame.mixer.music.set_volume(0.3)
         pygame.mixer.music.play(-1)
+
     def update_music_by_round(self):
         current_round = self.game.current_round if self.game is not None else 1
 
@@ -122,10 +136,12 @@ class Interface:
             self.play_music(self.music_path_2)
         else:
             self.play_music(self.music_path_1)
+
     def enter_round_scene(self):
-        self.scene = "round"
+        self.scene = Scene.ROUND
         self.round_start_ticks = pygame.time.get_ticks()
         self.update_music_by_round()
+
     def enter_final_category_scene(self):
         if self.game is None:
             print("No game object.")
@@ -140,37 +156,38 @@ class Interface:
             self.game.current_question = self.game.all_question[0]
 
         self.current_question = self.game.current_question
-        self.scene = "final_category"
+        self.scene = Scene.FINAL_CATEGORY
         self.final_category_start_ticks = pygame.time.get_ticks()
+
+
 
     def run(self):
         while self.running:
             self.handle_events()
 
             # draw differnt interface: initial interface, choose question interface, answering interface and caculating counts
-            if self.scene == "start":
+            if self.scene == Scene.START:
                 self.draw_initial_interface()
-            elif self.scene == "setting":
-                self.setting_field()
-            elif self.scene == "choose":
+            elif self.scene == Scene.CHOOSE:
                   self.draw_choose_question()
-            elif self.scene == "final_category":
+            elif self.scene == Scene.FINAL_CATEGORY:
                     self.draw_final_category()
-            elif self.scene == "round":
+            elif self.scene == Scene.ROUND:
                 self.draw_round_info()
-            elif self.scene == "buzz":
+            elif self.scene == Scene.BUZZ:
                 self.draw_buzz()
-            elif self.scene == "buzz_success":
+            elif self.scene ==Scene.BUZZ_SUCCESS:
                 self.draw_buzz_success()
-            elif self.scene == "question":
+            elif self.scene == Scene.QUESTION:
                 self.draw_question_screen()
-            elif self.scene == "count":
+            elif self.scene == Scene.COUNT:
                 self.draw_counting()
+
             pygame.display.flip()
             self.clock.tick(180) #trust your computer
-            if self.scene == "buzz":
+            if self.scene == Scene.BUZZ:
                 self.update_buzz_scene()
-            if self.scene == "buzz_success":
+            if self.scene == Scene.BUZZ_SUCCESS:
                 elapsed = (pygame.time.get_ticks() - self.buzz_success_start_ticks) / 1000
 
                 if elapsed >= self.buzz_success_duration:
@@ -179,161 +196,163 @@ class Interface:
                     if hasattr(player, "start_thinking"):
                         player.start_thinking()
                     self.current_question.reset_time()
-                    self.scene = "question"
+                    self.scene = Scene.QUESTION
             #check whether times out
 
-            if self.scene == "round":
+            if self.scene == Scene.ROUND:
                 elapsed = (pygame.time.get_ticks() - self.round_start_ticks) / 1000
                 if elapsed >= self.round_limit:
                     if self.game.current_round == 3:
                         self.enter_final_category_scene()
                     else:
-                        self.scene = "choose"
+                        self.scene = Scene.CHOOSE
                         self.choose_start_ticks = pygame.time.get_ticks()
-            if self.scene == "final_category":
+            if self.scene == Scene.FINAL_CATEGORY:
                 elapsed = (pygame.time.get_ticks() - self.final_category_start_ticks) / 1000
                 if elapsed >= self.final_category_duration:
                     self.answering_player_index = 0
                     self.current_question.reset_time()
-                    self.scene = "question"
+                    self.scene = Scene.QUESTION
             if self.scene == "choose" and self.get_choose_time_left() <= 0:
                 print("time out")
                 valid_index = [i for i, q in enumerate(self.game.all_question) if q is not None and not q.answered]
-                q_index = random.choice(valid_indices)
+                q_index = random.choice(valid_index)
                 self.current_question_index = q_index
                 self.current_question = self.game.all_question[q_index]
                 self.game.current_question = self.current_question
                 self.enter_buzz_scene()
-
-                
-
-            if self.scene == "draw_count":
-                elapsed = (pygame.time.get_ticks() - self.result_start_ticks) / 1000
-                if elapsed >= self.result_display_time:
-                    self.enter_round_scene()
-
-
-
         pygame.quit()
         sys.exit()
 
-
-
+#Events
     def handle_events(self):
         for event in pygame.event.get():
-
             # close it by click 'X'
             if event.type == pygame.QUIT:
                 self.running = False
-
-        
-
             # All Clicking action
             if event.type == pygame.MOUSEBUTTONDOWN:
-                # turn to choose question page by clicking start
-                if self.scene == "start":
-                    if self.start_button.collidepoint(event.pos):
-                        self.enter_round_scene()
-                        
-                # choose some specific fields
-                elif self.scene == "setting":
-                    for i, rect in enumerate(self.field_buttons):
-                        if rect.collidepoint(event.pos):
-                            self.selected_field = self.fields[i]
-                            print("selected field:", self.selected_field)
-                            self.scene = "start"
-                            #self.choose_start_ticks = pygame.time.get_ticks()
-                    self.input_active = self.input_box.collidepoint(event.pos)
-                # choose questions by clicking the box
-                elif self.scene == "choose":
-                    for i, rect in enumerate(self.choices):
-                        if rect.collidepoint(event.pos):
-                            row = i % 5
-                            col = i // 5
-
-                            if row == 0:
-                                print("This is category row, not a question.")
-                                return
-                            q_index = col * 4 + (row - 1)
-                            print("clicked choice index:", i)
-                            print("question index:", q_index)
-
-                            self.current_question = self.game.all_question[q_index]
-                            self.game.current_question = self.current_question
-
-                            if self.current_question is None:
-                                print("No valid question selected.")
-                                return
-
-                            if self.current_question.answered:
-                                print("This question has already been answered.")
-                                return
-
-                            self.enter_buzz_scene()
-
+                self.handle_mouse_down(event)
+                
             # All typing action
             if event.type == pygame.KEYDOWN:
-                if self.scene == "buzz" and self.game is not None and self.current_question is not None:
-                    human = self.game.players[0]
+                  self.handle_key_down(event)
 
-                    if human.buzz and human.check_buzz(event):
-                        if self.current_question.get_buzzing_time_left() > 0:
-                            print("Human Player buzzed!")
-                            self.current_button_img = self.button2_img
-                            self.enter_buzz_success_scene(0)
-                elif self.scene == "question" and self.game is not None and self.current_question is not None:
-                    key_to_answer = {pygame.K_1: 0,pygame.K_2: 1,pygame.K_3: 2,pygame.K_4: 3,}
 
-                    if event.key in key_to_answer:
-                        answer_index = key_to_answer[event.key]
+    def handle_mouse_down(self,event):
+        if self.scene == Scene.START:
+            self.handle_start_click(event)
+        elif self.scene == Scene.CHOOSE:
+            self.handle_choose_click(event)
+    
+    def handle_key_down(self, event):
+        if self.scene == Scene.BUZZ:
+            self.handle_buzz_key(event)
+        elif self.scene == Scene.QUESTION:
+            self.handle_answer_key(event)
+        elif self.scene == Scene.COUNT:
+            self.handle_count_key(event)
 
-                        player = self.game.players[self.answering_player_index]
-                        q = self.current_question
-                        answered = player.get_answer(q, answer_index)
-                        print(answered)
-                        is_correct = player.update_score(q)
-                        self.scene = "count"
-                elif self.scene == "count":
-                    if self.game is not None and self.current_question is not None:
-                        self.game.reset_question_states()
+    def handle_start_click(self,event):
+        if self.start_button.collidepoint(event.pos):
+            self.enter_round_scene()
+    
+    def handle_choose_click(self,event):
+        if self.game is None:
+            print("No game object.")
+            return
+        for i, rect in enumerate(self.choices):
+            if rect.collidepoint(event.pos):
+                row = i % 5
+                col = i // 5
 
-                    self.current_question = None
-                    self.answering_player_index = None
-                    self.game.current_question = None
-                    self.game.next_round()
+                if row == 0:
+                    #print("This is category row")
+                    return
+                q_index = col * 4 + (row - 1)
+                print("clicked choice index:", i)
+                print("question index:", q_index)
+                self.current_question = self.game.all_question[q_index]
+                self.game.current_question = self.current_question
 
-                    if self.game.current_round > 3:
-                        print("Game finished.")
-                        self.running = False
-                    else:
-                        self.enter_round_scene()
-                        #start next round
-                elif self.scene == "field" and self.input_active:
-                 if event.key == pygame.K_RETURN:
-                    if self.input_text.strip() != "":
-                        self.selected_field = self.input_text.strip()
-                        print("typed field:", self.selected_field)
-                        self.scene = "choose"
-                        self.choose_start_ticks = pygame.time.get_ticks()
+                if self.current_question is None:
+                    print("No valid question selected.")
+                    return
 
-                elif event.key == pygame.K_BACKSPACE:
-                    self.input_text = self.input_text[:-1]
+                if self.current_question.answered:
+                    print("This question has already been answered.")
+                    return
 
-                else:
-                    self.input_text += event.unicode
-                if self.scene == "setting" and self.input_active:
+                self.enter_buzz_scene()
+    
+    def handle_buzz_key(self,event):
+        if self.game is None or self.current_question is None:
+            return
+        human = self.game.players[0]
 
-                    if event.key == pygame.K_RETURN:
-                        if self.input_text.strip() != "":
-                            self.selected_field = self.input_text.strip()
-                            print("typed field:", self.selected_field)
-                            self.scene = "choose"
-                            self.choose_start_ticks = pygame.time.get_ticks()
-                    elif event.key == pygame.K_BACKSPACE:
-                        self.input_text = self.input_text[:-1]
+        if human.buzz and human.check_buzz(event):
+            if self.current_question.get_buzzing_time_left() > 0:
+                print("Human Player buzzed!")
+                self.current_button_img = self.button2_img
+                self.enter_buzz_success_scene(0)
+    
+    def handle_answer_key(self,event):
+        if self.game is None or self.current_question is None:
+            return
 
-                    else:
-                        self.input_text += event.unicode
+        if self.answering_player_index is None:
+            print("No answering player.")
+            return
+
+        key_to_answer = {pygame.K_1: 0,pygame.K_2: 1,pygame.K_3: 2,pygame.K_4: 3,}
+
+        if event.key not in key_to_answer:
+            return
+
+        answer_index = key_to_answer[event.key]
+
+        player = self.game.players[self.answering_player_index]
+        q = self.current_question
+
+        answered = player.get_answer(q, answer_index)
+        print("answered:", answered)
+
+        if answered:
+            is_correct = player.update_score(q)
+
+            if is_correct:
+                print("Correct!")
+            else:
+                print("Wrong!")
+
+            print("player choice:", player.current_choice)
+            print("correct index:", q.correct_index)
+            print("current score:", player.score)
+
+        self.scene = Scene.COUNT
+    
+
+    def handle_count_key(self,event):
+        if self.game is None:
+            return
+
+        if self.current_question is not None:
+            self.game.reset_question_states()
+
+        self.current_question = None
+        self.answering_player_index = None
+        self.game.current_question = None
+        self.game.next_round()
+
+        if self.game.current_round > 3:
+            print("Game finished.")
+            self.running = False
+        else:
+            self.enter_round_scene()
+
+                        
+
+                
 #timing function
     def get_choose_time_left(self):
         current_ticks = pygame.time.get_ticks()
@@ -363,8 +382,6 @@ class Interface:
             box_bg_color=self.button_bg
             text_frame_color=self.frame_color 
             text_color = (255,255,255)
-
-
             if row == 0:
                 text_content = self.fields[col]
             else:
@@ -431,8 +448,8 @@ class Interface:
             question_text_2 = self.font.render(sec, True, self.text_color)
             question_text_3 = self.font.render(thir, True, self.text_color)
             self.screen.blit(question_text_1, (70, 20))
-            self.screen.blit(question_text_2, (70, 50))
-            self.screen.blit(question_text_3, (70, 80))
+            self.screen.blit(question_text_2, (70, 55))
+            self.screen.blit(question_text_3, (70, 90))
         for i, option in enumerate(q.options):
             option_text = self.font.render(f"{i + 1}. {option}", True, self.text_color)
             self.screen.blit(option_text, (120, 200 + i * 80))
@@ -444,7 +461,7 @@ class Interface:
             print("No current question. Cannot enter buzz scene.")
             return
 
-        self.scene = "buzz"
+        self.scene = Scene.BUZZ
         self.answering_player_index = None
         self.buzz_hint = "Press SPACE to buzz!"
         self.current_button_img = self.button1_img
@@ -457,7 +474,7 @@ class Interface:
             human.buzz_reset()
                 
     def enter_buzz_success_scene(self, player_index):
-        self.scene = "buzz_success"
+        self.scene = Scene.BUZZ_SUCCESS
         self.answering_player_index = player_index
         self.buzz_success_start_ticks = pygame.time.get_ticks()
 
@@ -555,6 +572,7 @@ class Interface:
         hint_text = score_font.render("Press any key to continue...", True, (200, 200, 200))    
         hint_rect = hint_text.get_rect(center=(self.width // 2, self.height - 100))    
         self.screen.blit(hint_text, hint_rect)
+
     def draw_final_category(self):
         self.screen.fill(self.bg_color)
 
