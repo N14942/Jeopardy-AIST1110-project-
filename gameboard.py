@@ -2,7 +2,6 @@ from player import HumanPlayer, AIPlayer, Difficulty
 from question import Question, AI_Manager
 from enum import Enum
 import random
-import pygame
 
 class Gameboard:
     def __init__(self, difficulty: Difficulty = Difficulty.MEDIUM, 
