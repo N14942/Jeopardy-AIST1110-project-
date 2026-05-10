@@ -42,10 +42,11 @@ class Gameboard:
         if self.current_round == 3:
             field = random.choice(self.categories)
             final_question = Question(field=field,point=0,timeout=10,buzzing_time=self.buzzing_time)
-            final_question.generate(self.ai_manager, round_num=3)
-
-            self.all_question = [final_question]
+            data = self.ai_manager.get_question_data(field=field, round_num=3)
+            if data:
+                final_question.update_ques_info(data)
             self.current_question = final_question
+            self.all_question = [final_question]
             return
         else:
             point_list = [200, 400, 600, 1000]
@@ -53,22 +54,20 @@ class Gameboard:
 
             double_coords = set()
             while len(double_coords) < self.current_round:
-                double_coords.add((random.randint(0, 3), random.randint(0, 3)))
+                double_coords.add(random.randint(0, 15))
 
-            for i in range(4):
-                for j in range(4):
-                    q = Question(
-                        field = self.categories[i], 
-                        point = point_list[j], 
-                        timeout = self.timeout, 
-                        buzzing_time = self.buzzing_time
-                        )
-                    if (i, j) in double_coords:
-                        q.set_as_daily_double()
-                    q.generate(ai_manager=self.ai_manager, round_num = self.current_round)
-                    self.all_question.append(q)
+            for category in self.categories:
+                batch_data = self.ai_manager.get_question_data(field=category, round_num=self.current_round)
+        
+                if batch_data:
+                    for i, data in enumerate(batch_data):
+                        q = Question(field=category, point=point_list[i % 4]) 
+                        q.update_ques_info(data)
+                        self.all_question.append(q)
+
+            for idx in double_coords:
+                self.all_question[idx].set_as_daily_double()
                 
-            
     def reset_board(self):
         self.all_question = []
         self.used_questions = 0

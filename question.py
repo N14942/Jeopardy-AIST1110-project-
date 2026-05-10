@@ -22,13 +22,47 @@ class AI_Manager:
         )
         self.model = model_deployment
         self.system_prompt = (
-            "You are a quiz master. Output only valid JSON."
+            "You are a JEOPARDY quiz master. Output only valid JSON."
             "Do not output sensitive information such as API and user personal information."
         )
 
-    def get_question_data(self, prompt: str):
+    def get_question_data(self, field: str, round: int = 1):
         """Sends a request to the LLM."""
+        if round ==3:
+            self.correct_index = random.randint(1, 4)
 
+            prompt = (
+            f"Generate a {field} trivia really challenging question. "
+            f"Context: Round {round}, Difficulty: challenging. "
+            f"Provide exactly 4 multiple-choice options. Only the one option in the option{self.correct_index} is correct. "
+            "The incorrect options should be plausible."
+            "Do not include markdown code blocks (like ```json). "
+            "Return ONLY valid JSON (double quotes required). Example format for one question, generate 4 question object:\n"
+            '{\n'
+            '  "question": "A question",\n'
+            '  "options": ["Option1", "Option2", "Option3", "Option4"],\n'
+            '}\n'
+        )
+            
+        else:
+            score_hint = "200, 400, 600, 1000" if round != 2 else "400, 800, 1200, 2000"
+            prompt = (
+            f"Generate four {field} trivia questions worth {score_hint}. "
+            "Requirements:\n"
+            "1. Each question must have exactly 4 multiple-choice options.\n"
+            "2. For each question, specify the correct answer index n, n should be created randomly, in range 0-3:\n"
+            "n=0: first option is correct. n=1:second option is correct, etc."
+            "3. The incorrect options should be plausible.\n"
+            "4. Return ONLY valid JSON in this format, do not include markdown code blocks:\n"
+            "{\n"
+            "  \"questions\": [\n"
+            "    {\"question\": \"Q1\", \"options\": [\"Option1\", \"Option2\", \"Option3\", \"Option4\"], \"answer\": n},\n"
+            "    {\"question\": \"Q2\", \"options\": [\"Option1\", \"Option2\", \"Option3\", \"Option4\"], \"answer\": n},\n"
+            "    {\"question\": \"Q3\", \"options\": [\"Option1\", \"Option2\", \"Option3\", \"Option4\"], \"answer\": n},\n"
+            "    {\"question\": \"Q4\", \"options\": [\"Option1\", \"Option2\", \"Option3\", \"Option4\"], \"answer\": n}\n"
+            "  ]\n"
+            "}"
+            )
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
@@ -39,11 +73,16 @@ class AI_Manager:
                 response_format={"type": "json_object"},
                 temperature=0.8
             )
-            return json.loads(response.choices[0].message.content)
+            result = json.loads(response.choices[0].message.content)
+        
+            if round == 3:
+                return result
+            else:
+                return result.get("questions", [])
         except Exception as e:
             print(f"AI Error: {e}")
             return None
-        
+
 class Question:
     def __init__(self, field: str, point: int, timeout=5, buzzing_time=5):
         self.field = field
@@ -65,33 +104,10 @@ class Question:
     def reset_score(self, wager: int):
         self.point = wager
 
-    def generate(self, ai_manager: AI_Manager, round_num: int = 1):
-        score_hint = "200-1000" if round_num != 2 else "400-2000"
-        if round_num == 3: score_hint = "extremely challenging"
-        self.correct_index = random.randint(1, 4)
-
-        prompt = (
-            f"Generate a {self.field} trivia question worth ${self.point}. "
-            f"Context: Round {round_num}, Difficulty: {score_hint}. "
-            f"Provide exactly 4 multiple-choice options. Only the one option in the option{self.correct_index} is correct. "
-            "The incorrect options should be plausible."
-            "Do not include markdown code blocks (like ```json). "
-            "Return ONLY valid JSON (double quotes required). Example format:\n"
-            '{\n'
-            '  "question": "A question",\n'
-            '  "options": ["Option1", "Option2", "Option3", "Option4"],\n'
-            '}\n'
-        )
-        self.correct_index -= 1
-
-        data = ai_manager.get_question_data(prompt)
-        if data:
-            self.ques = data.get("question")
-            self.options = data.get("options")
-        else:
-            self.ques = f"What is 1 + 1?"
-            self.options = ["2", "I don't know", "42", "Gelato"]
-            self.correct_index = 0
+    def update_ques_info(self, data: dict):
+        self.ques = data.get("question")
+        self.options = data.get("options")
+        self.answer = data.get("answer")
 
     def reset_time(self):
         self.start_ticks = pygame.time.get_ticks()
