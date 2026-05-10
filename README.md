@@ -2,6 +2,7 @@
 This group project is created as a version of the television game show Jeopardy! using artificial intelligence, and as the final project for the AIST1110 course.
 
 ## Key Features
+
 **[ Question Generation via AI ]** 
 
 Use of Azure OpenAI to create real-time multiple-choice questions based on the selected categories and point values.
@@ -12,7 +13,7 @@ Use of Azure OpenAI to create real-time multiple-choice questions based on the s
 Three levels of difficulty (easy, medium, and hard), along with different levels of accuracy, response time, and strategies for betting, are offered for each type of AI.
 
 
-**[ 3-Rounds of Play ]**
+**[ 3 Rounds of Play ]**
 
 1. Jeopardy! Round: Standard play with 1 hidden Daily Double
 
