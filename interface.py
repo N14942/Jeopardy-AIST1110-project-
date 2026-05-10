@@ -161,68 +161,78 @@ class Interface:
 
 
 
+
+
+#Run
     def run(self):
         while self.running:
             self.handle_events()
-
             # draw differnt interface: initial interface, choose question interface, answering interface and caculating counts
-            if self.scene == Scene.START:
-                self.draw_initial_interface()
-            elif self.scene == Scene.CHOOSE:
-                  self.draw_choose_question()
-            elif self.scene == Scene.FINAL_CATEGORY:
-                    self.draw_final_category()
-            elif self.scene == Scene.ROUND:
-                self.draw_round_info()
-            elif self.scene == Scene.BUZZ:
-                self.draw_buzz()
-            elif self.scene ==Scene.BUZZ_SUCCESS:
-                self.draw_buzz_success()
-            elif self.scene == Scene.QUESTION:
-                self.draw_question_screen()
-            elif self.scene == Scene.COUNT:
-                self.draw_counting()
-
+            self.draw()
             pygame.display.flip()
             self.clock.tick(180) #trust your computer
-            if self.scene == Scene.BUZZ:
-                self.update_buzz_scene()
-            if self.scene == Scene.BUZZ_SUCCESS:
-                elapsed = (pygame.time.get_ticks() - self.buzz_success_start_ticks) / 1000
-
-                if elapsed >= self.buzz_success_duration:
-                    self.current_button_img = self.button1_img
-                    player = self.game.players[self.answering_player_index]
-                    if hasattr(player, "start_thinking"):
-                        player.start_thinking()
-                    self.current_question.reset_time()
-                    self.scene = Scene.QUESTION
-            #check whether times out
-
-            if self.scene == Scene.ROUND:
-                elapsed = (pygame.time.get_ticks() - self.round_start_ticks) / 1000
-                if elapsed >= self.round_limit:
-                    if self.game.current_round == 3:
-                        self.enter_final_category_scene()
-                    else:
-                        self.scene = Scene.CHOOSE
-                        self.choose_start_ticks = pygame.time.get_ticks()
-            if self.scene == Scene.FINAL_CATEGORY:
-                elapsed = (pygame.time.get_ticks() - self.final_category_start_ticks) / 1000
-                if elapsed >= self.final_category_duration:
-                    self.answering_player_index = 0
-                    self.current_question.reset_time()
-                    self.scene = Scene.QUESTION
-            if self.scene == "choose" and self.get_choose_time_left() <= 0:
-                print("time out")
-                valid_index = [i for i, q in enumerate(self.game.all_question) if q is not None and not q.answered]
-                q_index = random.choice(valid_index)
-                self.current_question_index = q_index
-                self.current_question = self.game.all_question[q_index]
-                self.game.current_question = self.current_question
-                self.enter_buzz_scene()
+            self.update()
         pygame.quit()
         sys.exit()
+
+    def draw(self):
+        if self.scene == Scene.START:
+            self.draw_initial_interface()
+        elif self.scene == Scene.CHOOSE:
+            self.draw_choose_question()
+        elif self.scene == Scene.FINAL_CATEGORY:
+            self.draw_final_category()
+        elif self.scene == Scene.ROUND:
+            self.draw_round_info()
+        elif self.scene == Scene.BUZZ:
+            self.draw_buzz()
+        elif self.scene ==Scene.BUZZ_SUCCESS:
+            self.draw_buzz_success()
+        elif self.scene == Scene.QUESTION:
+            self.draw_question_screen()
+        elif self.scene == Scene.COUNT:
+            self.draw_counting()
+    
+    def update(self):
+        if self.scene == Scene.BUZZ:
+                self.update_buzz_scene()
+        if self.scene == Scene.BUZZ_SUCCESS:
+            elapsed = (pygame.time.get_ticks() - self.buzz_success_start_ticks) / 1000
+
+            if elapsed >= self.buzz_success_duration:
+                self.current_button_img = self.button1_img
+                player = self.game.players[self.answering_player_index]
+                if hasattr(player, "start_thinking"):
+                    player.start_thinking()
+                self.current_question.reset_time()
+                self.scene = Scene.QUESTION
+            #check whether times out
+
+        if self.scene == Scene.ROUND:
+            elapsed = (pygame.time.get_ticks() - self.round_start_ticks) / 1000
+            if elapsed >= self.round_limit:
+                if self.game.current_round == 3:
+                    self.enter_final_category_scene()
+                else:
+                    self.scene = Scene.CHOOSE
+                    self.choose_start_ticks = pygame.time.get_ticks()
+        if self.scene == Scene.FINAL_CATEGORY:
+            elapsed = (pygame.time.get_ticks() - self.final_category_start_ticks) / 1000
+            if elapsed >= self.final_category_duration:
+                self.answering_player_index = 0
+                self.current_question.reset_time()
+                self.scene = Scene.QUESTION
+        if self.scene == "choose" and self.get_choose_time_left() <= 0:
+            print("time out")
+            valid_index = [i for i, q in enumerate(self.game.all_question) if q is not None and not q.answered]
+            q_index = random.choice(valid_index)
+            self.current_question_index = q_index
+            self.current_question = self.game.all_question[q_index]
+            self.game.current_question = self.current_question
+            self.enter_buzz_scene()
+
+
+
 
 #Events
     def handle_events(self):
@@ -448,8 +458,8 @@ class Interface:
             question_text_2 = self.font.render(sec, True, self.text_color)
             question_text_3 = self.font.render(thir, True, self.text_color)
             self.screen.blit(question_text_1, (70, 20))
-            self.screen.blit(question_text_2, (70, 55))
-            self.screen.blit(question_text_3, (70, 90))
+            self.screen.blit(question_text_2, (70, 60))
+            self.screen.blit(question_text_3, (70, 100))
         for i, option in enumerate(q.options):
             option_text = self.font.render(f"{i + 1}. {option}", True, self.text_color)
             self.screen.blit(option_text, (120, 200 + i * 80))
