@@ -1,29 +1,29 @@
-# 🎮 AI-Powered Jeopardy! ***AIST1110 GROUP PROJECT***
+# AI-Powered Jeopardy! ***AIST1110 GROUP PROJECT***
 This project is an interactive, AI-driven version of the classic TV quiz show Jeopardy!, developed as a group assignment for the AIST1110 (Introduction to Computing Using Python) course.
 
-## 🚀 Key Features
-**[ Dynamic AI Question Generation ]** 
+## Key Features
+**[ AI Question Generation ]** 
 
-Integrates Azure OpenAI (GPT-4o) to generate real-time multiple-choice questions tailored to specific categories and point values.
+Integrates Azure OpenAI\ to generate real-time multiple-choice questions tailored to specific categories and point values.
 
 
-**[ Sophisticated AI Opponents ]** 
+**[ AI Opponents ]** 
 
-Features AI players with "human-like" behaviors. They possess different Difficulty levels (Easy, Medium, Hard) that affect their accuracy, reaction time, and wagering strategies.
+Features AI players with different Difficulty levels (Easy, Medium, Hard) that affect their accuracy, reaction time, and wagering strategies.
 
 
 **[ Full 3-Round Experience ]**
 
-1️⃣ Jeopardy! Round: Standard gameplay with one hidden Daily Double.
+1. Jeopardy! Round: Standard gameplay with one hidden Daily Double
 
-2️⃣ Double Jeopardy! Round: Doubled point values with two hidden Daily Doubles.
+2. Double Jeopardy! Round: Doubled point values with two hidden Daily Doubles
 
-3️⃣ Final Jeopardy! Round: High-stakes wagering based on a single final category.
+3. Final Jeopardy! Round: High-stakes wagering based on a single final category
 
   
 **[ Customization ]** 
 
-Supports adjustable game difficulty and allows players to input custom fields (categories) for a personalized quiz experience.
+Supports adjustable game difficulty and allows players to input custom fields for a personalized quiz experience.
 
 
 **[ Rich Multimedia UI ]** 
@@ -50,14 +50,14 @@ The project is built on Object-Oriented Programming (OOP) principles for high ma
 `Game_flow.txt`: Detailed documentation of game rules, scoring logic, and round transitions.
 
 
-## 📂 Resource Folders
+## Resource Folders
 
 `/music`: Contains background tracks and sound effects for each round.
 
 `/assets`: Stores visual resources, including buttons and background images.
 
 
-## ⚙️ How to Run
+## How to Run
 
 **[ Install Requirements ]**
 
