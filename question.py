@@ -107,7 +107,7 @@ class Question:
     def update_ques_info(self, data: dict):
         self.ques = data.get("question")
         self.options = data.get("options")
-        self.answer = data.get("answer")
+        self.correct_index = data.get("answer")
 
     def reset_time(self):
         self.start_ticks = pygame.time.get_ticks()

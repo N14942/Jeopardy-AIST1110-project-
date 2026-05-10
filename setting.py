@@ -184,7 +184,7 @@ class Session:
         wagers = {}
         
         for p in eligible_players:
-            wagers[p] = self.get_wager_of_player(p, round_num=3)
+            wagers[p] = self.get_wager_of_player(p)
 
         #Final question reveal(interface)
 

@@ -66,7 +66,8 @@ class Gameboard:
                         self.all_question.append(q)
 
             for idx in double_coords:
-                self.all_question[idx].set_as_daily_double()
+                if idx < len(self.all_question):
+                    self.all_question[idx].set_as_daily_double()
                 
     def reset_board(self):
         self.all_question = []
