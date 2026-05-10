@@ -72,6 +72,10 @@ class Gameboard:
     def reset_board(self):
         self.all_question = []
         self.used_questions = 0
+        self.current_round += 1
+    
+    def next_round(self):
+        self.current_round += 1
 
     def reset_question_states(self):
         self.used_questions += 1
