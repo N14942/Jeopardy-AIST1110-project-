@@ -15,6 +15,10 @@ class Session:
         """Interface: Accept setting and apply on gameboard(timeout, difficulty...)."""
         pass
 
+    def next_round(self, n: int):
+        self.game.current_round == n
+        self.round == n
+
     def buzz_session(self) -> AIPlayer | HumanPlayer | None:
         self.ui.enter_buzz_scene()
         q = self.game.current_question
@@ -55,11 +59,9 @@ class Session:
         self.ui.choose_start_ticks = pygame.time.get_ticks()
 
         if self.round == 1:
-            chooser_idx = self.game.used_questions % self.game.player_number
             chooser = self.game.players[self.game.used_questions % self.game.player_number]
         else:
             chooser = self.game.ranking[-1]
-            chooser_idx = self.game.players.index(chooser)
 
         while self.ui.scene == "choose":
             if isinstance(chooser, AIPlayer):
@@ -114,28 +116,16 @@ class Session:
         q = self.game.current_question
 
         if self.round == 3:
-            max_value = 0 # Final Jeopardy 的逻辑在 do_wager 内部会自动使用玩家的 score
+            min_v = 5 
+            max_v = int(player.score)
         else:
-            max_value = self.game.get_max_board_value()
-            
+            max_board_value = self.game.get_max_board_value()
+            max_v = int(max(player.score, max_board_value))
+
         if isinstance(player, AIPlayer):
-            wager = player.do_wager(max_value, round=self.round)
+            wager = player.do_wager(max_v, round=self.round)
         else:
-            """
-                move human wager to interface:
-                def do_wager(self, input, max_value, round = 1):
-        if round == 3:
-            min = 5
-            max = self.score
-        else:
-            min = 0
-            max = max(self.score, max_value)
-        if input > max or input < min:
-            return False
-        else:
-            return input
-                """
-            wager = 5 # Hook
+            wager = self.ui.handle_events()
 
         if self.round != 3 and q.is_daily_double:
             q.reset_score(wager)
@@ -148,7 +138,10 @@ class Session:
             self.get_wager_of_player(player, round_num=self.round)
         return self.get_answer_of_player()
 
-    def non_final_jeopardy(self):
+    def non_final_jeopardy(self, n: int):
+        self.game.reset_board()
+        self.next_round(self, n)
+
         self.ui.scene = "round_info"
         self.ui.reset_time()
         while self.ui.scene == "round_info":
@@ -160,13 +153,10 @@ class Session:
 
         while self.game.used_questions < 16:
             self.select_question_session()
-            q = self.game.current_question
             
             while True:
                 cur_player = self.buzz_session()
                 if cur_player is None:
-                    # 无人抢答或所有人都因为答错被封锁了，跳过本题
-                    # [INTERFACE HOOK]: 界面显示正确答案，停留 2 秒
                     break
 
                 cur_player = self.buzz_session()
@@ -178,19 +168,18 @@ class Session:
                     pass #pass 为占位符
             
             self.game.reset_question_states()
-
-        self.game.reset_board()
-        self.round = self.game.current_round
         
     def final_jeopardy(self):
+        self.game.reset_board()
+        self.next_round(self, 3)
+
         eligible_players = [p for p in self.game.players if p.score > 0]
         if not eligible_players:
             #No people > 0 mark :)
             return
-        self.game.current_round = 3
-        self.round = 3
+        
         self.game.generate_questions() 
-        final_q = self.game.all_question
+        final_q = self.game.all_question[0]
         self.game.current_question = final_q
 
         wagers = {}
@@ -214,8 +203,8 @@ class Session:
         pass
 
     def gamerun(self):
-        self.non_final_jeopardy()
-        self.non_final_jeopardy()
+        self.non_final_jeopardy(1)
+        self.non_final_jeopardy(2)
         self.final_jeopardy()
         self.summary()
         
