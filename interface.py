@@ -232,8 +232,6 @@ class Interface:
             self.enter_buzz_scene()
 
 
-
-
 #Events
     def handle_events(self):
         for event in pygame.event.get():
@@ -597,3 +595,66 @@ class Interface:
         hint = self.small_font.render("Get ready for the final question...", True, self.text_color)
         hint_rect = hint.get_rect(center=(self.width // 2, 380))
         self.screen.blit(hint, hint_rect)
+
+    def draw_summary(self):
+        self.screen.fill((20, 20, 40)) # 深色背景
+
+        all_players = self.ranking
+        if not all_players: return
+
+        score_groups = []
+        if all_players:
+            current_group = [all_players[0]]
+            for p in all_players[1:]:
+                if p.score == current_group[0].score:
+                    current_group.append(p)
+                else:
+                    score_groups.append(current_group)
+                    current_group = [p]
+            score_groups.append(current_group)
+
+        margin = 50
+        available_width = self.width - 2 * margin
+        podium_base_y = self.height - 80
+        single_width = available_width // len(all_players)
+        current_x = margin + (available_width - len(all_players) * single_width) // 2
+        
+        rank_colors = [
+            (255, 215, 0),
+            (192, 192, 192),
+            (205, 127, 50),
+            (100, 100, 150)
+        ]
+
+        total_drawn_count = 0
+        for rank_idx, group in enumerate(score_groups):
+            actual_rank = total_drawn_count + 1
+            h = max(100, 300 - rank_idx * 60) 
+            color = rank_colors[rank_idx] if rank_idx < 3 else rank_colors[-1]
+
+            for player in group:
+                podium_rect = pygame.Rect(current_x + 5, podium_base_y - h, single_width - 10, h)
+                pygame.draw.rect(self.screen, color, podium_rect)
+                pygame.draw.rect(self.screen, (255, 255, 255), podium_rect, 2) # 白色边框
+
+                rank_text = self.font.render(self.get_rank_suffix(actual_rank), True, (255, 255, 255))
+                rank_rect = rank_text.get_rect(center=(podium_rect.centerx, podium_rect.bottom - 30))
+                self.screen.blit(rank_text, rank_rect)
+
+                name_font = pygame.font.SysFont("Arial", 24, bold=True)
+                name_text = name_font.render(player.name, True, (255, 255, 255))
+                name_rect = name_text.get_rect(center=(podium_rect.centerx, podium_rect.top - 40))
+                self.screen.blit(name_text, name_rect)
+
+                score_text = self.font.render(f"${player.score}", True, color)
+                score_rect = score_text.get_rect(center=(podium_rect.centerx, podium_rect.top - 15))
+                self.screen.blit(score_text, score_rect)
+
+                current_x += single_width
+            
+            total_drawn_count += len(group)
+
+        title_font = pygame.font.SysFont("Arial", 50, bold=True)
+        title_text = title_font.render("FINAL STANDINGS", True, (255, 255, 255))
+        self.screen.blit(title_text, (self.width//2 - title_text.get_width()//2, 30))
+
