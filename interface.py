@@ -6,6 +6,57 @@ import math
 import random
 import os
 
+class Button:
+    def __init__(self, x, y, width, height, text, font, 
+                 bg_color=(139, 69, 19), 
+                 hover_color=(160, 82, 45),
+                 text_color=(255, 255, 255),
+                 action=None):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.text = text
+        self.font = font
+        
+        #color
+        self.base_color = bg_color
+        self.hover_color = hover_color
+        self.text_color = text_color
+        self.used_bg = (200, 200, 200)
+        self.used_text = (0, 0, 0)
+        
+        self.current_bg = bg_color
+        self.is_answered = False
+        self.action = action
+
+    def draw(self, screen):
+        if self.is_answered:
+            self.current_bg = self.used_bg
+            txt_color = self.used_text
+        else:
+            mouse_pos = pygame.mouse.get_pos()
+            if self.rect.collidepoint(mouse_pos):
+                self.current_bg = self.hover_color
+            else:
+                self.current_bg = self.base_color
+            txt_color = self.text_color
+
+        pygame.draw.rect(screen, self.current_bg, self.rect)
+        pygame.draw.rect(screen, (50, 50, 50), self.rect, 2) # 边框
+
+        text_surf = self.font.render(self.text, True, txt_color)
+        text_rect = text_surf.get_rect(center=self.rect.center)
+        screen.blit(text_surf, text_rect)
+
+    def handle_event(self, event):
+        if self.is_answered: 
+            return
+
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.rect.collidepoint(event.pos):
+                if self.action:
+                    self.action()
+                return True
+        return False
+
 class Interface:
     def __init__(self, game_logic=None, width=900, height=600, title="Jeopardy Game"):
         pygame.init()
@@ -48,9 +99,10 @@ class Interface:
         self.text_color = (249,215,124)
         self.button_bg = (163,111,90)
         self.frame_color = (217,179,140)
-        #self.used_color_button_bg
-        #self.used_color_button_text
-        #Here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        self.used_button_bg = (200, 200, 200)   # 浅灰色
+        self.used_button_text = (0, 0, 0)
+
 
         self.font = pygame.font.SysFont(None, 56)
         self.small_font = pygame.font.SysFont(None, 30)
@@ -96,12 +148,29 @@ class Interface:
         box_height = 80
         gap = 10
 
+        scores = [200, 400, 600, 1000]
+
         for col in range(4):
             for row in range(5):
                 x = start_x + col * (box_width + gap)
                 y = start_y + row * (box_height + gap)
-                rect = pygame.Rect(x, y, box_width, box_height)
-                self.choices.append(rect)
+                
+                if row == 0:
+                    text_content = self.fields[col]
+                else:
+                    text_content = f"${scores[row - 1]}"
+                q_idx = col * 4 + (row - 1) if row > 0 else -1
+                
+                new_button = Button(x, y, box_width, box_height, 
+                                    text_content, self.font, q_idx)
+                
+                self.choices.append(new_button)
+
+    def reset_choosed_choice(self, index):
+        for button in self.choices:
+            if button.action_index == index:
+                button.is_answered = True
+                break
 
 #Music!
     def play_music(self, music_path):
@@ -322,25 +391,11 @@ class Interface:
     def draw_choose_question(self):
         self.screen.fill(self.bg_color)
 
-        scores = [200, 400, 600, 1000]
-
-        for index, rect in enumerate(self.choices):
-            row = index % 5
-            col = index // 5
-
-            pygame.draw.rect(self.screen, self.button_bg, rect)
-            pygame.draw.rect(self.screen, self.frame_color, rect, 3)
-
-            if row == 0:
-                text_content = self.fields[col]
-            else:
-                text_content = f"${scores[row - 1]}"
-
-            text = self.font.render(text_content, True, (255, 255, 255))
-            self.screen.blit(text, (rect.x + 5, rect.y + 25))
+        for button in self.choices:
+            button.draw(self.screen)
 
         time_left = math.ceil(self.get_choose_time_left())
-        time_text = self.font.render(f"Time: {time_left}", True, self.text_color)
+        time_text = self.font.render(f"Time: {time_left}", True, (0,0,0))
         self.screen.blit(time_text, (650, 35))
 
     def draw_round_info(self):
