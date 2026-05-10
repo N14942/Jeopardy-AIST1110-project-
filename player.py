@@ -62,6 +62,18 @@ class HumanPlayer(Player):
         
     def update_answer(self, answer):
         self.current_choice = answer
+    def get_answer(self, current_question: Question, answer: int = None) -> bool:
+        remaining_time = current_question.get_remaining_time()
+
+        if remaining_time <= 0:
+            self.current_choice = -1
+            return False
+
+        if answer is not None:
+            self.current_choice = answer
+            return True
+
+        return None
     
 
 
