@@ -1,13 +1,30 @@
 # Jeopardy-AIST1110-project-
-This is a Jeopardy (AIST1110-project).
+This is a Jeopardy Game(AIST1110-project).
 
-Reminder: 
+Main function:
 
-1, Do not directly coding on the main branch, create new branch for adding functions/ debug.
+1, Use OpenAI API to generate multiple choices.
 
-2, If you use AI, please make the annotation and coding style less AI-like.
+2, Create AIPlayers with human-like habits and different ability, which can answer questions, select questions and buzz.
 
-3, To get a good score, please make the structure clear. 
+3, Include multiple rounds: JEOPARDY, Double JEOPARDY and Final JEOPARDY.
 
-*Game rules and related reminders are moved to rules_and_reminders.txt
+4, Characteristic function: support difficulty change and customize field.
 
+Functions of different files:
+
+Player.py: Store class AIPlayer and HumanPlayer.
+
+Question.py: Store AIManager and Question class (Store question information and generate questions.)
+
+Gameboard.py: Store class Gameboard for managing multiple players and questions.
+
+interface.py: Store class interface and primitive class button, which onitor and get players' input, and make visual and sound effects. 
+
+setting.py: Store class Sessions, which runs the game using above classes.
+
+Game_flow.txt: Store rules and process of game running.
+
+Folder: music: Store music resources.
+
+Folder: assets: Store art resources.

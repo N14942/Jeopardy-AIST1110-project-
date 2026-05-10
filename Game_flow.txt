@@ -1,4 +1,4 @@
-Sturcture design(current, you can edit if you have other ideas):
+Game Sturcture design:
 
 1, Player: Store information and activity of ai and human players.
 
@@ -8,7 +8,7 @@ Sturcture design(current, you can edit if you have other ideas):
 
 4, interface: visualization / player operation -> gameboard.
 
-Game rules (Shorter one):
+Game rules:
 Gameround:
 1,Jeopardy! Round (round = 1) For first gameboard with 4x4 = 16 questions.
 0. Generate gameboard.(Score: 200, 400, 600, 1000)
@@ -41,24 +41,4 @@ ii. Answer in 10 seconds.
 
 4, Final winner:
 Give out first, second...place. Higher score wins.
-SPECIAL CASE: Same mark: same place (1gold, 2gold, 3bronze, for example.)
-
-
-Reminders:
-To Gameboard:
-i. Please carefully read player.py and question.py (or use ai to summarize) and know how functions work. If you need adding new functions, please tell me.
-ii. Reset buzzing state of all players after finishing a question.
-iii. To make Progress Bar work properly, check_buzz() and get_answer() functions are used to monitor player's actions all time.
-Thus, put them in a loop such as while True: ...
-
-To interface:
-i. Please carefully read player.py and question.py (or use ai to summarize) and know how functions work. If you need adding new functions, please tell me.
-ii. You may use get_remaining_time() and get_buzzing_time_left() in class question to make a time bar. 
-iii. get_answer() return False when out of time, and update_score() return False when answered wrongly.
-you may use this to design speical effects for out of time and answered wrongly separately.
-
-Test on your device:
-
-About API: Please use.env file as tutorial 7 mentioned, 
-
-set env_used in class environment in question.py to true.
+SPECIAL CASE: Same mark: same place (1gold, 2gold, 3bronze)
