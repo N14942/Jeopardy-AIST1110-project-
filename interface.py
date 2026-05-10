@@ -579,7 +579,7 @@ class Interface:
             pygame.draw.rect(self.screen, bar_color, (bar_x, y_pos, current_bar_width, 30))                
             val_text = score_font.render(f"${player.score}", True, bar_color)        
             self.screen.blit(val_text, (bar_x + bar_max_width + 20, y_pos))    
-        hint_text = score_font.render("Press any key to continue...", True, (200, 200, 200))    
+        hint_text = score_font.render("Press SPACE to continue...", True, (200, 200, 200))    
         hint_rect = hint_text.get_rect(center=(self.width // 2, self.height - 100))    
         self.screen.blit(hint_text, hint_rect)
 
