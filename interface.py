@@ -1,5 +1,4 @@
 # Create a simple single player interface,,,,,,
-#Haven't add the count interface
 import pygame
 import sys
 import math
