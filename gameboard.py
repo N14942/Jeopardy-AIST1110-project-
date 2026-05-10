@@ -42,7 +42,7 @@ class Gameboard:
         if self.current_round == 3:
             field = random.choice(self.categories)
             final_question = Question(field=field,point=0,timeout=10,buzzing_time=self.buzzing_time)
-            data = self.ai_manager.get_question_data(field=field, round_num=3)
+            data = self.ai_manager.get_question_data(field=field, round=3)
             if data:
                 final_question.update_ques_info(data)
             self.current_question = final_question
@@ -57,7 +57,7 @@ class Gameboard:
                 double_coords.add(random.randint(0, 15))
 
             for category in self.categories:
-                batch_data = self.ai_manager.get_question_data(field=category, round_num=self.current_round)
+                batch_data = self.ai_manager.get_question_data(field=category, round=self.current_round)
         
                 if batch_data:
                     for i, data in enumerate(batch_data):
