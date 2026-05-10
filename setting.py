@@ -2,18 +2,23 @@ from interface import Interface
 from gameboard import Gameboard
 from player import AIPlayer, HumanPlayer, Difficulty
 from question import Question
+import pygame
 
-class Round:
-    def __init__(self):
-        self.game = Gameboard()
+class Session:
+    def __init__(self, ui: Interface):
+        self.ui = ui
+        self.game = ui.game
         self.round = 1
         self.game.generate_aiplayers()
     
     def game_setting(self):
-        """Accept setting and apply on gameboard(timeout, difficulty...)."""
+        """Interface: Accept setting and apply on gameboard(timeout, difficulty...)."""
         pass
 
     def buzz_session(self) -> AIPlayer | HumanPlayer | None:
+        self.ui.enter_buzz_scene()
+        q = self.game.current_question
+
         valid_p = [p for p in self.game.players if p.buzz == True]
         if not valid_p:
             return None
@@ -22,80 +27,85 @@ class Round:
             if isinstance(p, AIPlayer):
                 p.start_buzzing()
 
-        while True:
-            if self.game.current_question.get_buzzing_time_left() <= 0:
-                return None
+        while self.ui.scene == "buzz":
+            self.ui.handle_events()
+            self.ui.update_buzz_scene()
+            self.ui.draw_buzz()
+            pygame.display.flip()
+
             for p in valid_p:
-                if isinstance(p, AIPlayer):
-                    key = self.game.current_question
-                else: 
-                    key = None #interface:get_event
-                if p.check_buzz(key) == True:
-                    #interface+(... get chance)
-                    return p
+                if isinstance(p, AIPlayer)and p.check_buzz(q):
+                    self.ui.enter_buzz_success_scene(self.game.players.index(p))
+                    break
+
+            if q.get_buzzing_time_left() <= 0:
+                #Add interface:No one buzz
+                self.ui.scene = "choose"
+                return None
+
+        start_time = pygame.time.get_ticks()
+        while pygame.time.get_ticks() - start_time < 2000:
+            self.ui.draw_buzz_success()
+            pygame.display.flip()
+            
+        return self.game.players[self.ui.answering_player_index]
                 
-    def select_question_session(self) -> Question:
+    def select_question_session(self):
+        self.ui.scene = "choose"
+        self.ui.choose_start_ticks = pygame.time.get_ticks()
+
         if self.round == 1:
+            chooser_idx = self.game.used_questions % self.game.player_number
             chooser = self.game.players[self.game.used_questions % self.game.player_number]
         else:
             chooser = self.game.ranking[-1]
-        if isinstance(chooser, AIPlayer):
-            #interface+(... is choosing problem)
-            q = chooser.select_question(self.all_question)
-        else:
-            while True:
-                index = None # index = self.ui.get_clicked_question_index()
-                if index != None:
-                    q = self.game.all_question(index)
-        return q
+            chooser_idx = self.game.players.index(chooser)
+
+        while self.ui.scene == "choose":
+            if isinstance(chooser, AIPlayer):
+                selected_q = chooser.select_question(self.game.all_question)
+                self.game.current_question = selected_q
+                self.ui.enter_question_scene()
+            else:
+                self.ui.handle_events()
+                self.ui.draw_choose_question()
+                if self.ui.get_choose_time_left() <= 0:
+                    valid_qs = [q for q in self.game.all_question if not q.answered]
+                    import random
+                    self.game.current_question = random.choice(valid_qs)
+                    self.ui.enter_question_scene()
+        pygame.display.flip()
+        self.ui.clock.tick(60)
     
     def get_answer_of_player(self, player: AIPlayer | HumanPlayer) -> bool:
         q = self.game.current_question
         q.reset_time()
         if isinstance(player, AIPlayer):
-            player.start_thinking()
-            while True:
-                status = player.get_answer(q)
-                if status is True:
-                    return player.update_score(q)
-                elif status is False:
-                    player.update_score(q) 
-                    return False
+                player.start_thinking()
+        while self.ui.scene == "question":
+            self.ui.handle_events()
+            self.ui.draw_question_screen()
+            pygame.display.flip()
+
+            if isinstance(player, AIPlayer):
+                res = player.get_answer(q)
+                if res is not None:
+                    is_correct = player.update_score(q)
+                    #self.ui.show_result_animation(is_correct)
+                    return is_correct
                 
-        else:
-            while True:
-                answer = None #[hook]
-                """interface: logic: Detect HumanPlayer's answer. 
-                    Return True if answered successfully in time limit.
-                    False if no answer.
-                    None if no answer.
-                    (Design purpose: deal with valid answer/ timeout/ wait for answer)
-                    Please help me move time-detecting to get_answer in interface.
-                    time logic in previous player class:
-                    def get_answer(self, current_question: Question, answer: int = None) -> bool:
-                    (Design purpose: deal with valid answer/ timeout/ wait for answer)
-        
-        remaining_time = current_question.get_remaining_time()
 
-        if remaining_time <= 0:
-            self.current_choice = -1
-            return False
-        
-        if answer is not None:
-            self.current_choice = answer
-            return True
-
-        return None
-                    """
-                player.update_answer(answer)
+                if not isinstance(player, AIPlayer) and player.current_choice is not None:
+                    is_correct = player.update_score(q)
+                    #self.ui.show_result_animation(is_correct)
+                    return is_correct
+                
                 if q.get_remaining_time() <= 0:
-                    self.current_choice = -1
+                    player.update_answer(-1)
                     player.update_score(q)
+                    #self.show_result_animation(False)
                     return False
-                
-                if answer is not None:
-                    player.current_choice = answer
-                    return player.update_score(q)
+
                 
     def get_wager_of_player(self, player) -> int:
         """
@@ -139,10 +149,19 @@ class Round:
         return self.get_answer_of_player()
 
     def non_final_jeopardy(self):
+        self.ui.scene = "round_info"
+        self.ui.reset_time()
+        while self.ui.scene == "round_info":
+            self.ui.handle_events()
+            self.ui.draw_round_info()
+            pygame.display.flip()
+
         self.game.generate_questions()
 
         while self.game.used_questions < 16:
-            self.game.current_question = self.select_question_session()
+            self.select_question_session()
+            q = self.game.current_question
+            
             while True:
                 cur_player = self.buzz_session()
                 if cur_player is None:
